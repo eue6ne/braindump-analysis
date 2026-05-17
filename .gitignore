@@ -1,0 +1,4 @@
+braindump-analysis-venv/
+.env
+__pycache__/
+*.csv
