@@ -3,7 +3,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from notion_client import Client
 
-# ㄴ.env 파일에 저장된 환경변수 로드
+# .env 파일에 저장된 환경변수 로드
 load_dotenv()
 NOTION_TOKEN = os.getenv("NOTION_TOKEN")
 DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
@@ -39,31 +39,31 @@ def parse_notion_properties(results):
         for prop_name, prop_content in properties.items():
             prop_type = prop_content.get("type")
             
-            # 1. 텍스트 / 타이틀 타입 추출
+            # 텍스트 / 타이틀 타입 추출
             if prop_type in ["title", "rich_text"]:
                 text_list = prop_content.get(prop_type, [])
                 row_data[prop_name] = text_list[0].get("plain_text", "") if text_list else ""
                 
-            # 2. 숫자 타입 추출
+            # 숫자 타입 추출
             elif prop_type == "number":
                 row_data[prop_name] = prop_content.get("number", None)
                 
-            # 3. 선택형(Select) 타입 추출
+            # 선택형(Select) 타입 추출
             elif prop_type == "select":
                 select_obj = prop_content.get("select")
                 row_data[prop_name] = select_obj.get("name", "") if select_obj else ""
                 
-            # 4. 다중 선택(Multi-select) 타입 추출
+            # 다중 선택(Multi-select) 타입 추출
             elif prop_type == "multi_select":
                 ms_list = prop_content.get("multi_select", [])
                 row_data[prop_name] = ", ".join([item.get("name", "") for item in ms_list])
                 
-            # 5. 날짜 타입 추출
+            # 날짜 타입 추출
             elif prop_type == "date":
                 date_obj = prop_content.get("date")
                 row_data[prop_name] = date_obj.get("start", "") if date_obj else ""
                 
-            # 6. 체크박스 타입 추출
+            # 체크박스 타입 추출
             elif prop_type == "checkbox":
                 row_data[prop_name] = prop_content.get("checkbox", False)
                 
