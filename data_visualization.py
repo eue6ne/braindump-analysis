@@ -79,7 +79,7 @@ def run_grouped_subplot_eda(file_path):
 
     # 종속변수 시계열 흐름 및 회귀 추세선 (단일 저장)
     plt.figure(figsize = (10, 5))
-    plt.plot(df.index, df[target_col], marker = "o", color = "lightgray", markersize = 5, linewidth = 1.2, label = f"실제 {target_col})")
+    plt.plot(df.index, df[target_col], marker = "o", color = "lightgray", markersize = 5, linewidth = 1.2, label = f"실제 {target_col}")
     x_ord = np.array([date.toordinal() for date in df.index])
     slope, intercept = np.polyfit(x_ord, df[target_col].values, 1)
     plt.plot(df.index, slope * x_ord + intercept, color = "crimson" if slope >= 0 else "dodgerblue", linewidth = 2.5, label = f"추세선 (기울기: {slope:.4f})")
