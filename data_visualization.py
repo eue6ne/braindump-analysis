@@ -79,14 +79,14 @@ def run_grouped_subplot_eda(file_path):
 
     # 종속변수 시계열 흐름 및 회귀 추세선 (단일 저장)
     plt.figure(figsize = (10, 5))
-    plt.plot(df.index, df[target_col], marker = "o", color = "lightgray", markersize = 5, linewidth = 1.2, label = "실제 기분")
+    plt.plot(df.index, df[target_col], marker = "o", color = "lightgray", markersize = 5, linewidth = 1.2, label = f"실제 {target_col})")
     x_ord = np.array([date.toordinal() for date in df.index])
     slope, intercept = np.polyfit(x_ord, df[target_col].values, 1)
     plt.plot(df.index, slope * x_ord + intercept, color = "crimson" if slope >= 0 else "dodgerblue", linewidth = 2.5, label = f"추세선 (기울기: {slope:.4f})")
     plt.title(f"시간 흐름에 따른 {target_col} 추세선 분석", fontsize = 12, pad = 10)
     plt.grid(True, linestyle = ":", alpha = 0.5); plt.legend(fontsize = 10); plt.xticks(rotation = 35)
     plt.tight_layout(); plt.savefig("eda_target_trend.png", dpi = 300); plt.close()
-    print("- [성공] 테마별 시각화 이미지 3종 저장 완료")
+    print("- [성공] 테마별 시각화 이미지 저장 완료")
 
 if __name__ == "__main__":
     set_universal_font()
