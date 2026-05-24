@@ -37,6 +37,13 @@ def run_grouped_subplot_eda(file_path):
                         if c != target_col]
     viz_cat_cols = [c for c in categorical_cols if (df[c].nunique() / len(df[c].dropna())) <= 0.5]
 
+    # 수치형 변수 간 상관관계 히트맵
+    if len(numeric_cols) > 1:
+        plt.figure(figsize = (8, 6))
+        sns.heatmap(df[numeric_cols].corr(), annot = True, cmap = "coolwarm", fmt = ".2f", linewidths = 0.5)
+        plt.title("수치형 변수 간 상관관계 히트맵", fontsize = 14, weight = "bold")
+        plt.tight_layout(); plt.savefig("eda_heatmap.png", dpi = 300); plt.close()
+
     # 모든 수치형 변수의 분포 히스토그램
     num_count = len(numeric_cols)
     if num_count > 0:
@@ -100,6 +107,6 @@ if __name__ == "__main__":
     target_file = f"notion_brain_dump_cleaned_{args.data}.csv"
     try:
         run_grouped_subplot_eda(target_file)
-        print(f"\n[최종 완료] {target_file} 기반의 범용 Subplot 시각화가 성공적으로 완료되었습니다!")
+        print(f"\n[최종 완료] {target_file} 기반의 시각화가 성공적으로 완료되었습니다!")
     except FileNotFoundError:
         print(f"[오류] 파일이 없습니다: {target_file}. 전처리 단계를 먼저 실행하세요.")
