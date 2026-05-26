@@ -16,7 +16,7 @@ def fetch_notion_data(database_id):
     results = []
     has_more = True
     start_cursor = None
-    
+
     while has_more:
         response = notion.databases.query(
             database_id = database_id,
@@ -24,60 +24,64 @@ def fetch_notion_data(database_id):
         )
         results.extend(response.get("results"))
         has_more = response.get("has_more")
-        start_cursor = response.get("next_cursor")
-        
-    print(f"Successfully fetched {len(results)} rows of data!")
+        # has_more가 False면 next_cursor는 None → 루프 종료
+        # start_cursor에 None을 넘기면 처음부터 재조회하므로 반드시 has_more 확인 후 갱신
+        start_cursor = response.get("next_cursor") if has_more else None
+
+    print(f"총 {len(results)}개의 데이터를 가져왔습니다!")
     return results
 
 def parse_notion_properties(results):
     parsed_data = []
-    
+
     for row in results:
         properties = row.get("properties", {})
         row_data = {}
-        
+
         for prop_name, prop_content in properties.items():
             prop_type = prop_content.get("type")
-            
+
             # 텍스트 / 타이틀 타입 추출
             if prop_type in ["title", "rich_text"]:
                 text_list = prop_content.get(prop_type, [])
                 row_data[prop_name] = text_list[0].get("plain_text", "") if text_list else ""
-                
+
             # 숫자 타입 추출
             elif prop_type == "number":
                 row_data[prop_name] = prop_content.get("number", None)
-                
+
             # 선택형(Select) 타입 추출
             elif prop_type == "select":
                 select_obj = prop_content.get("select")
                 row_data[prop_name] = select_obj.get("name", "") if select_obj else ""
-                
+
             # 다중 선택(Multi-select) 타입 추출
             elif prop_type == "multi_select":
                 ms_list = prop_content.get("multi_select", [])
                 row_data[prop_name] = ", ".join([item.get("name", "") for item in ms_list])
-                
+
             # 날짜 타입 추출
             elif prop_type == "date":
                 date_obj = prop_content.get("date")
                 row_data[prop_name] = date_obj.get("start", "") if date_obj else ""
-                
-            # 체크박스 타입 추출
+
+            # 체크박스 타입 추출: bool → int (0/1) 변환
             elif prop_type == "checkbox":
-                row_data[prop_name] = prop_content.get("checkbox", False)
-                
+                row_data[prop_name] = int(prop_content.get("checkbox", False))
+
         parsed_data.append(row_data)
-        
+
     df = pd.DataFrame(parsed_data)
     return df
+
+
 
 if __name__ == "__main__":
     raw_results = fetch_notion_data(DATABASE_ID)
     df = parse_notion_properties(raw_results)
-    
+
     print("\n--- 정제된 데이터프레임 구조 확인 ---")
     print(df.head())
-    
+
     df.to_csv("notion_brain_dump_raw.csv", index = False, encoding = "utf-8-sig")
     print("\n'notion_brain_dump_raw.csv' 파일로 저장 완료!")
