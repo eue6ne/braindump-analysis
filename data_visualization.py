@@ -56,9 +56,11 @@ def run_grouped_subplot_eda(file_path):
 
     # 수치형 변수 간 상관관계 히트맵
     if len(numeric_cols) > 1:
-        plt.figure(figsize = (8, 6))
-        sns.heatmap(df[numeric_cols].corr(), annot = True, cmap = "coolwarm", fmt = ".2f", linewidths = 0.5)
-        plt.title("수치형 변수 간 상관관계 히트맵", fontsize = 14, weight = "bold")
+        plt.figure(figsize = (12, 10))
+        sns.heatmap(df[numeric_cols].corr(), annot = True, cmap = "coolwarm", fmt = ".2f", linewidths = 0.5, annot_kws = {"size": 8})
+        plt.xticks(rotation = 45, ha = 'right', fontsize = 9) 
+        plt.yticks(rotation = 0, fontsize = 9)
+        plt.title("수치형 변수 간 상관관계 히트맵", fontsize = 14, weight = "bold", pad = 20)
         plt.tight_layout()
         plt.savefig("eda_heatmap.png", dpi = 300)
         plt.close()
@@ -119,6 +121,80 @@ def run_grouped_subplot_eda(file_path):
     plt.tight_layout()
     plt.savefig("eda_target_trend.png", dpi = 300)
     plt.close()
+
+    # 다중선택 컬럼 항목별 감정지수 평균 막대그래프
+    # MLB 인코딩으로 분리된 컬럼 탐지: 수치형 컬럼 중 원본 컬럼명_항목 형태인 것
+    # 원본 다중선택 컬럼명 추출 (언더스코어 기준 앞부분이 동일한 그룹)
+    encoded_groups = {}
+    for col in df.select_dtypes(include = [np.number]).columns:
+        if col == target_col or "_" not in col:
+            continue
+        # 범주_변수명_항목 구조에서 마지막 언더스코어 이전을 원본 컬럼명으로 간주
+        parts = col.rsplit("_", 1)
+        if len(parts) == 2:
+            group, item = parts
+            # 그룹 내 고유값이 2개 이상이고 0/1로만 구성된 경우 MLB 인코딩 컬럼으로 판단
+            unique_vals = df[col].dropna().unique()
+            if set(unique_vals).issubset({0, 1, 0.0, 1.0}):
+                if group not in encoded_groups:
+                    encoded_groups[group] = []
+                encoded_groups[group].append((item, col))
+
+    for group, items in encoded_groups.items():
+        if len(items) < 2:
+            continue
+        item_labels = [item for item, _ in items]
+        item_means  = [df[col].mul(df[target_col]).sum() / df[col].sum()
+                       if df[col].sum() > 0 else 0
+                       for _, col in items]
+
+        fig, ax = plt.subplots(figsize = (max(6, len(items) * 1.2), 4))
+        bars = ax.bar(item_labels, item_means, color = "steelblue", alpha = 0.8, edgecolor = "white")
+        ax.axhline(y = df[target_col].mean(), color = "crimson", linestyle = "--",
+                   linewidth = 1.5, label = f"전체 평균 ({df[target_col].mean():.2f})")
+        ax.set_title(f"[{group}] 항목별 평균 {target_col}", fontsize = 12, weight = "bold")
+        ax.set_ylabel(target_col)
+        ax.set_ylim(0, 10)
+        ax.legend(fontsize = 9)
+        plt.xticks(rotation = 30, ha = "right")
+        plt.tight_layout()
+        safe_name = group.replace("/", "_").replace(" ", "_")
+        plt.savefig(f"eda_multiselect_{safe_name}.png", dpi = 300, bbox_inches = "tight")
+        plt.close()
+
+    # 수치형 변수 페어플롯 (수치형 컬럼 수가 2개 이상일 때)
+    pair_cols = [c for c in numeric_cols if c not in [col for _, col in
+                 [pair for group_items in encoded_groups.values() for pair in group_items]]]
+    pair_cols = [target_col] + pair_cols  # 종속변수 포함
+
+    if len(pair_cols) >= 3:
+        pair_df = df[pair_cols].copy()
+        pair_plot = sns.pairplot(pair_df, diag_kind = "kde", plot_kws = {"alpha": 0.5, "color": "teal"},
+                                 diag_kws = {"color": "teal"})
+        pair_plot.figure.suptitle("수치형 변수 페어플롯", fontsize = 14, weight = "bold", y = 1.02)
+        pair_plot.savefig("eda_pairplot.png", dpi = 300, bbox_inches = "tight")
+        plt.close()
+
+    # 요일별 감정지수 박스플롯
+    day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    day_label = ["월", "화", "수", "목", "금", "토", "일"]
+    day_map   = dict(zip(day_order, day_label))
+
+    df_day = df.copy()
+    df_day["요일"] = df_day.index.day_name().map(day_map)
+    existing_days = [d for d in day_label if d in df_day["요일"].values]
+
+    if len(existing_days) >= 2:
+        plt.figure(figsize = (9, 4))
+        sns.boxplot(data = df_day, x = "요일", y = target_col,
+                    order = existing_days, palette = "pastel")
+        sns.stripplot(data = df_day, x = "요일", y = target_col,
+                      order = existing_days, color = "black", alpha = 0.4, jitter = 0.1)
+        plt.title(f"요일별 {target_col} 분포", fontsize = 12, weight = "bold")
+        plt.tight_layout()
+        plt.savefig("eda_weekday.png", dpi = 300)
+        plt.close()
+
     print("- [성공] 테마별 시각화 이미지 저장 완료")
 
 
