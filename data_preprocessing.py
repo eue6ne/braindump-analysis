@@ -159,7 +159,7 @@ def handle_outlier(df, outlier_type):
         print("[이상치] 이상치 탐지 대상 수치형 컬럼이 없습니다.")
         return df
 
-    # 1단계: 전체 이상치 탐지
+    # 전체 이상치 탐지
     outlier_info = {}  # {col: (is_outlier, lower, upper)}
 
     for col in target_cols:
@@ -177,7 +177,7 @@ def handle_outlier(df, outlier_type):
         print("[이상치] 탐지된 이상치가 없습니다.")
         return df
 
-    # 2단계: 탐지 결과 출력
+    # 탐지 결과 출력
     print("\n" + "=" * 50)
     print("[이상치] 이상치로 감지된 데이터는 아래와 같습니다.")
     print("=" * 50)
@@ -194,14 +194,14 @@ def handle_outlier(df, outlier_type):
     print(f"총 {all_outlier_flags.sum()}개 행에서 이상치가 탐지되었습니다.")
     print("=" * 50)
 
-    # 3단계: 처리 여부 확인
+    # 처리 여부 확인
     answer = input("\n이상치 처리를 원하시나요? [y/n]: ").strip().lower()
 
     if answer != "y":
         print("[이상치] 이상치를 처리하지 않고 원본 값을 유지합니다.")
         return df
 
-    # 4단계: 처리 방식 선택
+    # 처리 방식 선택
     print("\n처리 방식을 선택해주세요.")
     print("  [1] flag — 이상치 행에 '이상치_플래그' 컬럼 추가 (값 보존, 분석 시 참고용)")
     print("  [2] cap  — 이상치를 IQR 경계값으로 대체 (Winsorizing)")
@@ -211,7 +211,7 @@ def handle_outlier(df, outlier_type):
         print("[이상치] 올바른 선택이 아닙니다. 이상치를 처리하지 않고 원본 값을 유지합니다.")
         return df
 
-    # 5단계: 컬럼별 처리할 행 선택
+    # 컬럼별 처리할 행 선택
     selected_indices = {}  # {col: [선택된 index 리스트]}
 
     for col, (is_outlier, lower, upper) in outlier_info.items():
@@ -221,13 +221,16 @@ def handle_outlier(df, outlier_type):
         print(f"\n▶ [{col}] 에서 이상치 {len(outlier_dates)}개가 탐지되었습니다.")
         print(f"   아래 목록에서 처리할 항목의 번호를 입력하세요.")
         print(f"   (번호는 이상치 목록 기준이며, 전체 데이터 순서와 다를 수 있습니다.)")
-        print(f"   (입력 예시: 1 → 1번만 처리 / 1,3 → 1번과 3번 처리 / all → 전체 처리)")
+        print(f"   (입력 예시: 1 → 1번만 처리 / 1,3 → 1번과 3번 처리 / all → 전체 처리 / skip → 건너뜀)")
         for idx, (date, val) in enumerate(zip(outlier_dates, outlier_vals), start = 1):
             print(f"  {idx}. {str(date)[:10]} | {val}")
 
         row_input = input("\n입력: ").strip().lower()
 
-        if row_input == "all":
+        if row_input == "skip":
+            print(f"  [{col}] 이상치 처리를 건너뜁니다.")
+            selected_indices[col] = []
+        elif row_input == "all":
             selected_indices[col] = outlier_dates
         else:
             try:
@@ -237,7 +240,7 @@ def handle_outlier(df, outlier_type):
                 print(f"  [경고] 올바른 입력이 아닙니다. [{col}] 이상치 처리를 건너뜁니다.")
                 selected_indices[col] = []
 
-    # 6단계: 선택된 행에 처리 적용
+    # 선택된 행에 처리 적용
     flag_indices = []
 
     for col, indices in selected_indices.items():
