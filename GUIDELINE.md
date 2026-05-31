@@ -127,8 +127,6 @@ python data_visualization.py --data impute --scaler none
 | 텍스트 마이닝 | — | — | `브레인 덤프` 컬럼 별도 처리 |
 | 시계열 분석 | impute | none | |
 
-> 범주형 컬럼의 인코딩(원핫 등)은 `data_preprocessing.py`가 아닌 **각 분석 파일 최상단**에서 처리합니다.
-
 ---
 
 ## 6. 데이터 권장 수량
@@ -141,7 +139,7 @@ python data_visualization.py --data impute --scaler none
 | 텍스트 마이닝 | 60일 | 120일+ |
 | 시계열 분석 | 90일 | 180일 |
 
-> 현재 권장 분석 시작 시점: **90일(3개월)** 이상 축적 후
+> 권장 분석 시작 시점: **90일(3개월)** 이상 축적 후
 
 ---
 
@@ -240,7 +238,7 @@ rm -rf ~/.cache/matplotlib
 
 ---
 
-## 9. 샘플 데이터 안내
+## 9. 샘플 데이터 안내 (sample_data.csv)
 
 ### 시나리오
 입사 3개월차 직장인 적응기 (90일, 2027-04-05 ~ 2027-07-03)
