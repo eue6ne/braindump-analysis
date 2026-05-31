@@ -1,6 +1,7 @@
 import warnings
 warnings.filterwarnings('ignore')
 
+import os
 import platform
 import math
 import argparse
@@ -11,6 +12,10 @@ import seaborn as sns
 
 # 텍스트 마이닝 대상 컬럼 (시각화 대상에서 제외)
 TEXT_COLS = ["브레인 덤프", "오늘의 요약"]
+
+# 시각화 이미지 저장 경로
+OUTPUT_DIR = "outputs"
+os.makedirs(OUTPUT_DIR, exist_ok = True)
 
 def set_universal_font():
     """운영체제(OS)를 자동으로 감지하여 한글 깨짐이 없도록 폰트를 설정하는 함수"""
@@ -62,7 +67,7 @@ def run_grouped_subplot_eda(file_path):
         plt.yticks(rotation = 0, fontsize = 9)
         plt.title("수치형 변수 간 상관관계 히트맵", fontsize = 14, weight = "bold", pad = 20)
         plt.tight_layout()
-        plt.savefig("eda_heatmap.png", dpi = 300)
+        plt.savefig(f"{OUTPUT_DIR}/eda_heatmap.png", dpi = 300)
         plt.close()
 
     # 모든 수치형 변수의 분포 히스토그램
@@ -83,7 +88,7 @@ def run_grouped_subplot_eda(file_path):
 
         plt.suptitle("수치형 변수별 분포 히스토그램", fontsize = 14, weight = "bold", y = 1.02)
         plt.tight_layout()
-        plt.savefig("eda_histograms.png", dpi = 300, bbox_inches = "tight")
+        plt.savefig(f"{OUTPUT_DIR}/eda_histograms.png", dpi = 300, bbox_inches = "tight")
         plt.close()
 
     # 모든 범주형 변수별 감정지수 분포 박스플롯
@@ -104,7 +109,7 @@ def run_grouped_subplot_eda(file_path):
 
         plt.suptitle("범주형 변수별 감정지수 비교 박스플롯", fontsize = 14, weight = "bold", y = 1.02)
         plt.tight_layout()
-        plt.savefig("eda_boxplots.png", dpi = 300, bbox_inches = "tight")
+        plt.savefig(f"{OUTPUT_DIR}/eda_boxplots.png", dpi = 300, bbox_inches = "tight")
         plt.close()
 
     # 종속변수 시계열 흐름 및 회귀 추세선
@@ -119,7 +124,7 @@ def run_grouped_subplot_eda(file_path):
     plt.legend(fontsize = 10)
     plt.xticks(rotation = 35)
     plt.tight_layout()
-    plt.savefig("eda_target_trend.png", dpi = 300)
+    plt.savefig(f"{OUTPUT_DIR}/eda_target_trend.png", dpi = 300)
     plt.close()
 
     # 다중선택 컬럼 항목별 감정지수 평균 막대그래프
@@ -159,7 +164,7 @@ def run_grouped_subplot_eda(file_path):
         plt.xticks(rotation = 30, ha = "right")
         plt.tight_layout()
         safe_name = group.replace("/", "_").replace(" ", "_")
-        plt.savefig(f"eda_multiselect_{safe_name}.png", dpi = 300, bbox_inches = "tight")
+        plt.savefig(f"{OUTPUT_DIR}/eda_multiselect_{safe_name}.png", dpi = 300, bbox_inches = "tight")
         plt.close()
 
     # 수치형 변수 페어플롯 (수치형 컬럼 수가 2개 이상일 때)
@@ -172,7 +177,7 @@ def run_grouped_subplot_eda(file_path):
         pair_plot = sns.pairplot(pair_df, diag_kind = "kde", plot_kws = {"alpha": 0.5, "color": "teal"},
                                  diag_kws = {"color": "teal"})
         pair_plot.figure.suptitle("수치형 변수 페어플롯", fontsize = 14, weight = "bold", y = 1.02)
-        pair_plot.savefig("eda_pairplot.png", dpi = 300, bbox_inches = "tight")
+        pair_plot.savefig(f"{OUTPUT_DIR}/eda_pairplot.png", dpi = 300, bbox_inches = "tight")
         plt.close()
 
     # 요일별 감정지수 박스플롯
@@ -192,7 +197,7 @@ def run_grouped_subplot_eda(file_path):
                       order = existing_days, color = "black", alpha = 0.4, jitter = 0.1)
         plt.title(f"요일별 {target_col} 분포", fontsize = 12, weight = "bold")
         plt.tight_layout()
-        plt.savefig("eda_weekday.png", dpi = 300)
+        plt.savefig(f"{OUTPUT_DIR}/eda_weekday.png", dpi = 300)
         plt.close()
 
     print("- [성공] 테마별 시각화 이미지 저장 완료")

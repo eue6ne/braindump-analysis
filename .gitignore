@@ -1,8 +1,8 @@
 braindump-analysis-venv/
 .env
 __pycache__/
-*.csv
 *.png
 
-# 수정 후 오픈
-GUIDELINE.md
+# 실제 데이터
+notion_brain_dump_raw.csv
+notion_brain_dump_cleaned_*.csv
