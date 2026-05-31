@@ -2,6 +2,7 @@ braindump-analysis-venv/
 .env
 __pycache__/
 *.png
+sample_data_*.csv
 
 # 실제 데이터
 notion_brain_dump_raw.csv
