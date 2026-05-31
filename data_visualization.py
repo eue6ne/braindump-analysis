@@ -209,24 +209,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description = "노션 브레인 덤프 데이터 EDA 시각화 스크립트")
     parser.add_argument(
-        "--data",
+        "--input",
         type = str,
-        choices = ["drop", "impute"],
-        default = "impute",
-        help = "분석에 사용할 전처리 데이터 타입 선택 (기본값: impute)"
-    )
-    parser.add_argument(
-        "--scaler",
-        type = str,
-        choices = ["standard", "minmax", "none"],
-        default = "none",
-        help = "분석에 사용할 스케일링 타입 선택 (기본값: none)"
+        default = "notion_brain_dump_raw_cleaned_impute_none.csv",
+        help = "입력 CSV 파일 경로 (기본값: notion_brain_dump_raw_cleaned_impute_none.csv)"
     )
     args = parser.parse_args()
 
-    target_file = f"notion_brain_dump_cleaned_{args.data}_{args.scaler}.csv"
     try:
-        run_grouped_subplot_eda(target_file)
-        print(f"\n[최종 완료] {target_file} 기반의 시각화가 성공적으로 완료되었습니다!")
+        run_grouped_subplot_eda(args.input)
+        print(f"\n[최종 완료] {args.input} 기반의 시각화가 성공적으로 완료되었습니다!")
     except FileNotFoundError:
-        print(f"[오류] 파일이 없습니다: {target_file}. 전처리 단계를 먼저 실행하세요.")
+        print(f"[오류] 파일이 없습니다: {args.input}. 전처리 단계를 먼저 실행하거나 --input 경로를 확인해주세요.")

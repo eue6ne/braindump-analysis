@@ -1,4 +1,5 @@
 import argparse
+import os
 import pandas as pd
 import numpy as np
 from sklearn.impute import KNNImputer
@@ -329,18 +330,26 @@ if __name__ == "__main__":
         choices = ["detect", "none"],
         help = "이상치 처리 방식 선택 (detect: 탐지 후 대화형 처리, none: 생략 / 기본값: none)"
     )
+    parser.add_argument(
+        "--input",
+        type = str,
+        default = "notion_brain_dump_raw.csv",
+        help = "입력 CSV 파일 경로 (기본값: notion_brain_dump_raw.csv / 샘플 데이터 사용 시: data/sample_data.csv)"
+    )
     args = parser.parse_args()
-    raw_csv_path = "notion_brain_dump_raw.csv"
+
+    # 출력 파일명: 입력 파일명 기반으로 생성
+    input_stem = os.path.splitext(os.path.basename(args.input))[0]
 
     try:
-        raw_df = load_and_filter_target(raw_csv_path)
+        raw_df = load_and_filter_target(args.input)
 
         if args.mode == "drop":
             cleaned_df = handle_drop(raw_df)
-            output_filename = f"notion_brain_dump_cleaned_drop_{args.scaler}.csv"
+            output_filename = f"{input_stem}_cleaned_drop_{args.scaler}.csv"
         elif args.mode == "impute":
             cleaned_df = handle_impute(raw_df)
-            output_filename = f"notion_brain_dump_cleaned_impute_{args.scaler}.csv"
+            output_filename = f"{input_stem}_cleaned_impute_{args.scaler}.csv"
 
         cleaned_df = handle_outlier(cleaned_df, args.outlier)
         cleaned_df = handle_encode_multiselect(cleaned_df)
@@ -353,4 +362,4 @@ if __name__ == "__main__":
         print(f"\n'{output_filename}' 파일로 저장 완료!")
 
     except FileNotFoundError:
-        print(f"에러: {raw_csv_path} 파일이 없습니다. notion_loader.py를 먼저 실행해주세요.")
+        print(f"에러: {args.input} 파일이 없습니다. notion_loader.py를 먼저 실행하거나 --input 경로를 확인해주세요.")
