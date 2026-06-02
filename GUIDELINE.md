@@ -81,9 +81,23 @@ python notion_loader.py
 
 # 2단계: 전처리 (분석 목적에 따라 옵션 선택)
 python data_preprocessing.py --mode impute --outlier detect --scaler none
+# 샘플 데이터 사용 시
+python data_preprocessing.py --mode impute --outlier detect --scaler none --input sample_data.csv
 
 # 3단계: EDA 시각화
-python data_visualization.py --data impute --scaler none
+python data_visualization.py
+# 샘플 데이터 사용 시
+python data_visualization.py --input sample_data_cleaned_impute_none.csv
+
+# 4단계: 분석 (각 분석별 입력 파일 지정)
+python analysis_factor.py
+python analysis_regression.py
+python analysis_clustering.py
+python analysis_timeseries.py
+python analysis_text.py
+# 샘플 데이터 사용 시 --input sample_data_cleaned_impute_none.csv 추가
+# 단, 회귀분석은 standard 스케일링 적용 파일 사용 권장
+# python analysis_regression.py --input sample_data_cleaned_impute_standard.csv
 ```
 
 ### `--mode` 옵션
@@ -259,3 +273,106 @@ rm -rf ~/.cache/matplotlib
 - 월요일 감정 최저, 토요일 최고 (주간 주기성)
 
 > 샘플 데이터는 위 시나리오를 기반으로 Claude의 도움을 받아 생성했습니다.
+---
+
+## 10. 요인분석 (PCA) 해석 기준
+
+### 실행 방법
+```bash
+# 기본 (실제 데이터)
+python analysis_factor.py
+
+# 샘플 데이터
+python analysis_factor.py --input sample_data_cleaned_impute_none.csv
+```
+
+> 요인분석은 스케일링이 내부적으로 적용되므로 `none` 스케일링 파일을 사용합니다.
+
+### 생성 파일
+| 파일 | 설명 |
+|------|------|
+| `outputs/factor_scree.png` | 주성분 수 선택 기준 |
+| `outputs/factor_loadings.png` | 변수별 주성분 기여도 |
+| `outputs/factor_biplot.png` | PC1 vs PC2 산점도 |
+
+### 스크리 플롯 (`factor_scree.png`)
+몇 개의 주성분을 사용할지 결정하는 그래프입니다.
+
+- **Kaiser 기준 (고유값 ≥ 1)**: 고유값이 1 이상인 주성분만 선택
+- **누적 분산 80% 기준**: 누적 설명량이 80%를 넘는 시점의 주성분 수 선택
+- 두 기준이 다를 경우 더 적은 수를 선택하는 것을 권장
+- 데이터가 적을수록 주성분 수가 많아지는 경향 → 90일+ 데이터에서 재확인 필요
+
+### 적재량 히트맵 (`factor_loadings.png`)
+각 변수가 주성분에 얼마나 기여하는지 보여줍니다.
+
+| 범위 | 해석 |
+|------|------|
+| 0.4 이상 (빨강) | 해당 주성분과 강한 양의 연관 |
+| -0.4 이하 (파랑) | 해당 주성분과 강한 음의 연관 |
+| -0.4 ~ 0.4 | 연관 약함 |
+
+- 같은 주성분에 높은 적재량을 가진 변수들은 함께 움직이는 경향
+- 주성분 이름은 직접 해석 필요 (예: PC1에 업무강도·카페인·야근 높으면 "업무 스트레스 요인")
+
+### 바이플롯 (`factor_biplot.png`)
+- **점**: 각 날짜의 주성분 공간 위치
+- **화살표 방향이 같을수록**: 두 변수 간 양의 상관관계
+- **화살표 방향이 반대일수록**: 두 변수 간 음의 상관관계
+- **화살표 길이가 길수록**: 해당 주성분에 대한 기여도가 큼
+
+---
+
+## 11. 회귀분석 해석 기준
+
+### 실행 방법
+```bash
+# 기본 (실제 데이터, standard 스케일링 권장)
+python analysis_regression.py
+
+# 샘플 데이터
+python analysis_regression.py --input sample_data_cleaned_impute_standard.csv
+```
+
+> 회귀분석은 변수 간 스케일 차이가 결과에 영향을 주므로 `standard` 스케일링 파일을 사용합니다.
+
+### 생성 파일
+| 파일 | 설명 |
+|------|------|
+| `outputs/regression_coefficients.png` | 변수별 회귀계수 |
+| `outputs/regression_residuals.png` | 잔차 진단 4종 플롯 |
+| `outputs/regression_actual_vs_predicted.png` | 실제값 vs 예측값 |
+
+### VIF (분산팽창지수)
+다중공선성(독립변수끼리 지나치게 상관된 문제)을 확인하는 지표입니다.
+
+| VIF | 해석 |
+|-----|------|
+| < 5 | 양호 |
+| 5 ~ 10 | 주의 |
+| > 10 | 다중공선성 문제 → 해당 변수 제거 또는 PCA 고려 |
+
+### 회귀계수 (`regression_coefficients.png`)
+- **빨강 막대 (양수)**: 해당 변수 증가 시 감정지수 상승
+- **파랑 막대 (음수)**: 해당 변수 증가 시 감정지수 하락
+- **막대 길이가 길수록**: 감정지수에 미치는 영향이 큼
+- **`*` 표시**: p-value < 0.05로 통계적으로 유의미한 변수
+
+### 핵심 지표
+| 지표 | 해석 |
+|------|------|
+| R² | 모델이 감정지수 분산을 설명하는 비율 (1에 가까울수록 좋음) |
+| Adj. R² | 변수 수를 보정한 R² (변수가 많을수록 R²가 부풀려지므로 이 값으로 비교) |
+| F-통계량 p값 | < 0.05이면 모델 전체가 통계적으로 유의미 |
+| AIC | 낮을수록 좋은 모델 (변수 선택 시 비교 기준) |
+
+### 잔차 진단 (`regression_residuals.png`)
+| 플롯 | 이상적인 형태 |
+|------|--------------|
+| 잔차 vs 예측값 | 무작위로 퍼져있고 패턴 없음 |
+| 잔차 분포 | 정규분포(종 모양)에 가까움 |
+| Q-Q 플롯 | 점들이 대각선에 밀착 |
+| 표준화 잔차 | 대부분 ±2 이내 |
+
+> 데이터가 90일 미만일 경우 p-value 대부분이 유의미하지 않게 나올 수 있습니다.
+> 이는 모델 문제가 아니라 표본 크기 부족으로 인한 통계적 검정력 한계입니다.
