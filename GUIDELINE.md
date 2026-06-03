@@ -342,6 +342,7 @@ python analysis_regression.py --input sample_data_cleaned_impute_standard.csv
 | `outputs/regression_coefficients.png` | 변수별 회귀계수 |
 | `outputs/regression_residuals.png` | 잔차 진단 4종 플롯 |
 | `outputs/regression_actual_vs_predicted.png` | 실제값 vs 예측값 |
+| `outputs/regression_regularized_comparison.png` | OLS / Ridge / Lasso 계수 비교 (VIF > 10 시 생성) |
 
 ### VIF (분산팽창지수)
 다중공선성(독립변수끼리 지나치게 상관된 문제)을 확인하는 지표입니다.
@@ -350,7 +351,25 @@ python analysis_regression.py --input sample_data_cleaned_impute_standard.csv
 |-----|------|
 | < 5 | 양호 |
 | 5 ~ 10 | 주의 |
-| > 10 | 다중공선성 문제 → 해당 변수 제거 또는 PCA 고려 |
+| > 10 | 다중공선성 문제 → Ridge/Lasso 자동 실행  |
+
+> **주의**: `standard` 스케일링 파일을 사용해야 VIF가 정확하게 계산됩니다.
+> `none` 스케일링 파일 사용 시 변수 간 스케일 차이로 VIF가 왜곡되어 실제로는 문제없는 변수가 VIF > 10으로 나올 수 있습니다.
+
+### 다중공선성 문제 발생시, Lidge / Lasso 자동 실행
+VIF > 10 변수가 감지되면 OLS 완료 후 자동으로 Ridge / Lasso도 실행됩니다.
+
+- **Ridge**: 모든 변수를 유지하면서 계수를 축소, 다중공선성에 강함
+- **Lasso**: 불필요한 변수의 계수를 0으로 만들어 자동 변수 선택
+- 최적 정규화 강도(alpha)는 Cross-Validation으로 자동 탐색
+- VIF 양호 시 OLS만 실행, VIF > 10 감지 시 세 모델 R² 비교 출력
+
+### Ridge / Lasso 비교 시각화 (`regression_regularized_comparison.png`)
+VIF > 10 변수가 있을 때만 생성됩니다.
+
+- OLS / Ridge / Lasso 세 모델의 회귀계수를 나란히 비교
+- Lasso에서 0이 된 변수는 모델이 불필요하다고 판단한 것
+- Ridge와 OLS 계수 차이가 클수록 다중공선성 영향이 컸던 변수
 
 ### 회귀계수 (`regression_coefficients.png`)
 - **빨강 막대 (양수)**: 해당 변수 증가 시 감정지수 상승

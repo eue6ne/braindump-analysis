@@ -9,8 +9,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, RidgeCV, LassoCV
 from sklearn.metrics import r2_score, mean_squared_error
+from sklearn.model_selection import cross_val_score
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 import statsmodels.api as sm
 
@@ -37,10 +38,7 @@ def load_data(file_path):
     df = pd.read_csv(file_path, index_col = "날짜", parse_dates = True).sort_index()
 
     # 범주형 컬럼 원핫 인코딩 (텍스트 컬럼 제외)
-    cat_cols = [
-        c for c in df.select_dtypes(exclude = [np.number]).columns
-        if c not in EXCLUDE_COLS
-    ]
+    cat_cols = [c for c in df.select_dtypes(exclude = [np.number]).columns if c not in EXCLUDE_COLS]
 
     if cat_cols:
         df = pd.get_dummies(df, columns = cat_cols, drop_first = True, dtype = int)
@@ -103,18 +101,12 @@ def plot_coefficients(model, feature_cols):
     }).sort_values("계수", key = abs, ascending = False)
 
     colors = ["crimson" if c > 0 else "steelblue" for c in coef_df["계수"]]
-    labels = [
-        f"{v} *" if p < 0.05 else v
-        for v, p in zip(coef_df["변수"], coef_df["p값"])
-    ]
+    labels = [f"{v} *" if p < 0.05 else v for v, p in zip(coef_df["변수"], coef_df["p값"])]
 
     plt.figure(figsize = (8, max(5, len(feature_cols) * 0.45)))
     bars = plt.barh(labels, coef_df["계수"], color = colors, alpha = 0.8, edgecolor = "white")
     plt.axvline(x = 0, color = "black", linewidth = 0.8, linestyle = "--")
-    plt.title(
-        "회귀계수 (* p < 0.05)\n빨강: 감정지수 상승 / 파랑: 감정지수 하락",
-        fontsize = 12, weight = "bold"
-    )
+    plt.title("회귀계수 (* p < 0.05)\n빨강: 감정지수 상승 / 파랑: 감정지수 하락", fontsize = 12, weight = "bold")
     plt.xlabel("회귀계수")
     plt.tight_layout()
     plt.savefig(f"{OUTPUT_DIR}/regression_coefficients.png", dpi = 300, bbox_inches = "tight")
@@ -163,10 +155,8 @@ def plot_residuals(model, X, y):
     axes[1, 1].set_title("표준화 잔차\n(|값| > 2: 이상치 가능성)", fontsize = 11)
     axes[1, 1].legend(fontsize = 9)
 
-    plt.suptitle(
-        f"잔차 진단 플롯  |  R² = {model.rsquared:.3f}  /  Adj. R² = {model.rsquared_adj:.3f}",
-        fontsize = 13, weight = "bold", y = 1.02
-    )
+    plt.suptitle(f"잔차 진단 플롯  |  R² = {model.rsquared:.3f}  /  Adj. R² = {model.rsquared_adj:.3f}", 
+                 fontsize = 13, weight = "bold", y = 1.02)
     plt.tight_layout()
     plt.savefig(f"{OUTPUT_DIR}/regression_residuals.png", dpi = 300, bbox_inches = "tight")
     plt.close()
@@ -186,15 +176,85 @@ def plot_actual_vs_predicted(model, y):
     plt.plot([min_val, max_val], [min_val, max_val], color = "crimson", linestyle = "--", linewidth = 1.5, label = "완벽한 예측선")
     plt.xlabel("실제 감정지수")
     plt.ylabel("예측 감정지수")
-    plt.title(
-        f"실제값 vs 예측값\n(대각선에 가까울수록 예측력 높음)\nR² = {model.rsquared:.3f}",
-        fontsize = 12, weight = "bold"
-    )
+    plt.title(f"실제값 vs 예측값\n(대각선에 가까울수록 예측력 높음)\nR² = {model.rsquared:.3f}", fontsize = 12, weight = "bold")
     plt.legend(fontsize = 9)
     plt.tight_layout()
     plt.savefig(f"{OUTPUT_DIR}/regression_actual_vs_predicted.png", dpi = 300)
     plt.close()
     print("[실제값 vs 예측값] 저장 완료")
+
+def run_ridge_lasso(X, y):
+    """
+    Ridge / Lasso 정규화 회귀분석 실행.
+    - Ridge : 모든 변수를 유지하면서 계수를 축소 (다중공선성에 강함)
+    - Lasso : 불필요한 변수의 계수를 0으로 만들어 자동 변수 선택
+    최적 alpha(정규화 강도)는 Cross-Validation으로 자동 탐색.
+    """
+    alphas = np.logspace(-3, 3, 100)
+
+    # Ridge CV
+    ridge_cv = RidgeCV(alphas = alphas, cv = 5)
+    ridge_cv.fit(X, y)
+    ridge_pred = ridge_cv.predict(X)
+    ridge_r2 = r2_score(y, ridge_pred)
+
+    # Lasso CV
+    lasso_cv = LassoCV(alphas = alphas, cv = 5, max_iter = 10000)
+    lasso_cv.fit(X, y)
+    lasso_pred = lasso_cv.predict(X)
+    lasso_r2 = r2_score(y, lasso_pred)
+
+    # Lasso가 0으로 만든 변수
+    zero_coef = X.columns[lasso_cv.coef_ == 0].tolist()
+
+    print(f"\n--- Ridge 회귀 결과 ---")
+    print(f"  최적 alpha: {ridge_cv.alpha_:.4f}")
+    print(f"  R²: {ridge_r2:.3f}")
+
+    print(f"\n--- Lasso 회귀 결과 ---")
+    print(f"  최적 alpha: {lasso_cv.alpha_:.4f}")
+    print(f"  R²: {lasso_r2:.3f}")
+    if zero_coef:
+        print(f"  제거된 변수 ({len(zero_coef)}개): {zero_coef}")
+    else:
+        print("  제거된 변수 없음")
+
+    return ridge_cv, lasso_cv, ridge_r2, lasso_r2
+
+
+def plot_regularized_coefficients(ols_model, ridge_model, lasso_model, feature_cols):
+    """
+    OLS / Ridge / Lasso 회귀계수 비교 시각화.
+    - 세 모델의 계수를 나란히 비교해 다중공선성 영향을 확인
+    - Lasso에서 0이 된 변수는 모델이 불필요하다고 판단한 것
+    """
+    coef_df = pd.DataFrame({
+        "변수": feature_cols,
+        "OLS":   ols_model.params[1:].values,
+        "Ridge": ridge_model.coef_,
+        "Lasso": lasso_model.coef_
+    }).set_index("변수")
+
+    # 절댓값 기준 내림차순 정렬 (OLS 기준)
+    coef_df = coef_df.reindex(coef_df["OLS"].abs().sort_values(ascending = True).index)
+
+    fig, axes = plt.subplots(1, 3, figsize = (15, max(5, len(feature_cols) * 0.45)), sharey = True)
+    colors_map = {"OLS": "steelblue", "Ridge": "darkorange", "Lasso": "seagreen"}
+
+    for ax, col in zip(axes, ["OLS", "Ridge", "Lasso"]):
+        bar_colors = ["crimson" if v > 0 else colors_map[col] for v in coef_df[col]]
+        ax.barh(coef_df.index, coef_df[col], color = bar_colors, alpha = 0.8, edgecolor = "white")
+        ax.axvline(x = 0, color = "black", linewidth = 0.8, linestyle = "--")
+        ax.set_title(col, fontsize = 12, weight = "bold")
+        ax.set_xlabel("회귀계수")
+
+    plt.suptitle("OLS / Ridge / Lasso 회귀계수 비교\n(빨강: 양수 / 색상: 음수 / Lasso 0값: 제거된 변수)",
+                 fontsize = 12, weight = "bold", y = 1.02)
+    plt.tight_layout()
+    plt.savefig(f"{OUTPUT_DIR}/regression_regularized_comparison.png", dpi = 300, bbox_inches = "tight")
+    plt.close()
+    print("[정규화 회귀 비교] 저장 완료")
+
 
 def print_summary(model):
     """핵심 지표 요약 출력"""
@@ -233,6 +293,19 @@ if __name__ == "__main__":
         plot_residuals(model, X, y)
         plot_actual_vs_predicted(model, y)
         print_summary(model)
+
+        # VIF > 10 변수가 있으면 자동으로 Ridge / Lasso 실행
+        if (vif_df["VIF"] > 10).any():
+            print("\n[다중공선성 감지] Ridge / Lasso 정규화 회귀분석을 추가 실행합니다.")
+            ridge_model, lasso_model, ridge_r2, lasso_r2 = run_ridge_lasso(X, y)
+            plot_regularized_coefficients(model, ridge_model, lasso_model, feature_cols)
+            print(f"\n[모델 R² 비교]")
+            print(f"  OLS   : {model.rsquared:.3f}")
+            print(f"  Ridge : {ridge_r2:.3f}")
+            print(f"  Lasso : {lasso_r2:.3f}")
+        else:
+            print("\n[VIF 양호] 다중공선성 문제 없음, OLS 결과를 사용합니다.")
+
         print(f"\n[최종 완료] 회귀분석 시각화가 outputs/ 폴더에 저장되었습니다.")
     except FileNotFoundError:
         print(f"[오류] 파일이 없습니다: {args.input}")
