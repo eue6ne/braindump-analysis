@@ -89,10 +89,7 @@ def plot_scree(pca_full, feature_df):
     # 누적 분산 80% 충족 주성분 수
     n_80 = int(np.argmax(cumulative >= 80)) + 1
 
-    plt.suptitle(
-        f"PCA 주성분 선택 기준  |  Kaiser 기준: {n_kaiser}개  /  누적 분산 80%: {n_80}개",
-        fontsize = 12, weight = "bold", y = 1.02
-    )
+    plt.suptitle(f"PCA 주성분 선택 기준  |  Kaiser 기준: {n_kaiser}개  /  누적 분산 80%: {n_80}개", fontsize = 12, weight = "bold", y = 1.02)
     plt.tight_layout()
     plt.savefig(f"{OUTPUT_DIR}/factor_scree.png", dpi = 300, bbox_inches = "tight")
     plt.close()
@@ -117,13 +114,8 @@ def plot_loading_heatmap(scaled, feature_df, n_components):
     )
 
     plt.figure(figsize = (max(6, n_components * 1.5), max(6, len(feature_df.columns) * 0.6)))
-    sns.heatmap(
-        loading_df,
-        annot = True, fmt = ".2f", cmap = "coolwarm",
-        center = 0, linewidths = 0.5,
-        vmin = -1, vmax = 1,
-        annot_kws = {"size": 9}
-    )
+    sns.heatmap(loading_df, annot = True, fmt = ".2f", cmap = "coolwarm", center = 0, linewidths = 0.5, 
+                vmin = -1, vmax = 1, annot_kws = {"size": 9})
     plt.title("PCA 적재량 히트맵\n(|값| ≥ 0.4: 해당 주성분과 강한 연관)", fontsize = 13, weight = "bold", pad = 15)
     plt.xlabel("주성분 (괄호 안: 분산 설명량)")
     plt.ylabel("변수")
@@ -167,14 +159,9 @@ def plot_biplot(scaled, feature_df, n_components):
     # 변수 화살표
     scale = np.max(np.abs(scores)) / np.max(np.abs(loadings)) * 0.7
     for i, var in enumerate(feature_df.columns):
-        ax.annotate(
-            "", xy = (loadings[i, 0] * scale, loadings[i, 1] * scale), xytext = (0, 0),
-            arrowprops = dict(arrowstyle = "->", color = "crimson", lw = 1.5)
-        )
-        ax.text(
-            loadings[i, 0] * scale * 1.1, loadings[i, 1] * scale * 1.1,
-            var, fontsize = 9, color = "crimson", ha = "center"
-        )
+        ax.annotate("", xy = (loadings[i, 0] * scale, loadings[i, 1] * scale), xytext = (0, 0),
+                    arrowprops = dict(arrowstyle = "->", color = "crimson", lw = 1.5))
+        ax.text(loadings[i, 0] * scale * 1.1, loadings[i, 1] * scale * 1.1, var, fontsize = 9, color = "crimson", ha = "center")
 
     ax.axhline(0, color = "gray", linestyle = "--", linewidth = 0.8, alpha = 0.5)
     ax.axvline(0, color = "gray", linestyle = "--", linewidth = 0.8, alpha = 0.5)

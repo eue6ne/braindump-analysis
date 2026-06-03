@@ -174,8 +174,7 @@ def run_grouped_subplot_eda(file_path):
 
     if len(pair_cols) >= 3:
         pair_df = df[pair_cols].copy()
-        pair_plot = sns.pairplot(pair_df, diag_kind = "kde", plot_kws = {"alpha": 0.5, "color": "teal"},
-                                 diag_kws = {"color": "teal"})
+        pair_plot = sns.pairplot(pair_df, diag_kind = "kde", plot_kws = {"alpha": 0.5, "color": "teal"}, diag_kws = {"color": "teal"})
         pair_plot.figure.suptitle("수치형 변수 페어플롯", fontsize = 14, weight = "bold", y = 1.02)
         pair_plot.savefig(f"{OUTPUT_DIR}/eda_pairplot.png", dpi = 300, bbox_inches = "tight")
         plt.close()
@@ -191,10 +190,8 @@ def run_grouped_subplot_eda(file_path):
 
     if len(existing_days) >= 2:
         plt.figure(figsize = (9, 4))
-        sns.boxplot(data = df_day, x = "요일", y = target_col,
-                    order = existing_days, palette = "pastel")
-        sns.stripplot(data = df_day, x = "요일", y = target_col,
-                      order = existing_days, color = "black", alpha = 0.4, jitter = 0.1)
+        sns.boxplot(data = df_day, x = "요일", y = target_col, order = existing_days, palette = "pastel")
+        sns.stripplot(data = df_day, x = "요일", y = target_col, order = existing_days, color = "black", alpha = 0.4, jitter = 0.1)
         plt.title(f"요일별 {target_col} 분포", fontsize = 12, weight = "bold")
         plt.tight_layout()
         plt.savefig(f"{OUTPUT_DIR}/eda_weekday.png", dpi = 300)
