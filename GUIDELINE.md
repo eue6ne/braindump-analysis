@@ -362,7 +362,7 @@ python analysis_regression.py --input sample_data_cleaned_impute_standard.csv
 > **주의**: `standard` 스케일링 파일을 사용해야 VIF가 정확하게 계산됩니다.
 > `none` 스케일링 파일 사용 시 변수 간 스케일 차이로 VIF가 왜곡되어 실제로는 문제없는 변수가 VIF > 10으로 나올 수 있습니다.
 
-#### 다중공선성 문제 발생시, Lidge / Lasso 자동 실행
+#### 다중공선성 문제 발생시, Ridge / Lasso 자동 실행
 VIF > 10 변수가 감지되면 OLS 완료 후 자동으로 Ridge / Lasso도 실행됩니다.
 
 - **Ridge**: 모든 변수를 유지하면서 계수를 축소, 다중공선성에 강함
