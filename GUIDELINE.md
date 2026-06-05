@@ -403,9 +403,9 @@ VIF > 10 변수가 있을 때만 생성됩니다.
 > 이는 모델 문제가 아니라 표본 크기 부족으로 인한 통계적 검정력 한계입니다.
 ---
 
-## 6. 클러스터링
+### 6. 클러스터링
 
-### 실행 방법
+#### 실행 방법
 ```bash
 # 기본 (실제 데이터, minmax 스케일링 권장)
 python analysis_clustering.py
@@ -422,7 +422,7 @@ python analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv --ex
 
 > 클러스터링은 거리 기반 알고리즘이므로 변수 간 스케일을 통일하는 `minmax` 스케일링 파일 사용을 권장합니다.
 
-### 생성 파일
+#### 생성 파일
 | 파일 | 설명 |
 |------|------|
 | `outputs/clustering_optimal_k.png` | 최적 클러스터 수 탐색 (엘보우 + 실루엣) |
@@ -430,7 +430,7 @@ python analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv --ex
 | `outputs/clustering_mood.png` | 클러스터별 감정지수 분포 |
 | `outputs/clustering_pca.png` | PCA 2D 클러스터 분포 |
 
-### `--exclude_mlb` 옵션 (다중선택 파생 컬럼 제외)
+#### `--exclude_mlb` 옵션 (다중선택 파생 컬럼 제외)
 다중선택 컬럼은 전처리 시 MLB 인코딩으로 `범주_변수명_항목` 형태(언더스코어 2개 이상)의 0/1 이진 컬럼으로 분리됩니다. 이 컬럼들을 클러스터링에 포함하면 아래 두 가지 문제가 발생합니다.
 
 **(1) 항목 간 음의 상관관계 왜곡**  
@@ -444,7 +444,7 @@ python analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv --ex
 
 > `--exclude_mlb` 없이 돌렸을 때 클러스터가 특정 취미 항목으로만 분리된다면 해당 옵션 사용을 권장합니다.
 
-### 최적 클러스터 수 탐색 (`clustering_optimal_k.png`)
+#### 최적 클러스터 수 탐색 (`clustering_optimal_k.png`)
 | 기준 | 설명 |
 |------|------|
 | 엘보우 플롯 | 관성(Inertia)이 급격히 꺾이는 지점이 최적 k |
@@ -454,16 +454,16 @@ python analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv --ex
 - 실루엣 점수가 전반적으로 낮으면 `--k` 옵션으로 직접 지정해서 비교 권장
 - 데이터가 적을수록 클러스터가 뚜렷하게 분리되지 않을 수 있음 → 90일+ 데이터에서 재확인 권장
 
-### 클러스터별 히트맵 (`clustering_heatmap.png`)
+#### 클러스터별 히트맵 (`clustering_heatmap.png`)
 - **색상**: 전체 평균 대비 상대적 수준 (빨강: 높음 / 파랑: 낮음)
 - **숫자**: 해당 클러스터의 실제 변수 평균값
 - **변수 정렬**: 범주 접두어(`신체_`, `업무_`, `여가_`) 기준으로 자동 정렬되어 범주별 패턴을 한눈에 파악 가능
 - 같은 범주 변수들이 함께 빨갛거나 파란 클러스터는 해당 범주가 주요 특징인 하루 유형
 
-### 클러스터별 감정지수 (`clustering_mood.png`)
+#### 클러스터별 감정지수 (`clustering_mood.png`)
 - 박스 위치가 높을수록 해당 클러스터가 감정적으로 긍정적인 하루 패턴
 - 빨간 점선(전체 평균)보다 위/아래로 얼마나 떨어져 있는지로 상대적 감정 상태 파악
 
-### PCA 2D 분포 (`clustering_pca.png`)
+#### PCA 2D 분포 (`clustering_pca.png`)
 - 같은 색 점끼리 잘 뭉쳐있을수록 클러스터링 품질이 높음
 - 색이 섞여 있으면 클러스터 간 경계가 불명확한 것 → k 조정 또는 `--exclude_mlb` 사용 고려
