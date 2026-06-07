@@ -210,7 +210,6 @@ rm -rf ~/.cache/matplotlib
 > `감정지수`와 상관계수가 높은 변수일수록 회귀분석에서 유의미한 독립변수가 될 가능성이 높습니다.
 > 독립변수끼리 상관계수가 0.8 이상이면 다중공선성 문제가 발생할 수 있으므로 회귀분석 시 주의가 필요합니다.
 
----
 
 #### 분포 히스토그램 (`eda_histograms.png`)
 각 수치형 변수의 값 분포와 KDE(커널 밀도 추정) 곡선을 함께 표시합니다.
@@ -221,7 +220,6 @@ rm -rf ~/.cache/matplotlib
 - **봉우리가 두 개(이봉분포)**: 두 가지 패턴이 섞여 있을 가능성, 클러스터링에서 자연스럽게 분리될 수 있음
 - **막대가 한쪽에 몰림**: 데이터 범위가 너무 좁거나 이상치가 있을 수 있음
 
----
 
 #### 범주형 변수별 박스플롯 (`eda_boxplots.png`)
 범주형 변수(날씨 등)의 항목별로 `감정지수` 분포를 비교합니다.
@@ -233,7 +231,6 @@ rm -rf ~/.cache/matplotlib
 - **박스 위치 차이가 클수록**: 해당 범주가 감정지수에 미치는 영향이 클 가능성
 - **박스 크기가 클수록**: 해당 항목에서 감정지수의 편차가 큼
 
----
 
 #### 감정지수 추세선 (`eda_target_trend.png`)
 시간 흐름에 따른 `감정지수` 변화와 선형 회귀 추세선을 함께 표시합니다.
@@ -245,7 +242,6 @@ rm -rf ~/.cache/matplotlib
 
 > 추세선은 단순 선형 회귀이므로 장기 예측보다는 전반적인 경향 파악 용도로 활용하시길 바랍니다.
 
----
 
 #### 다중선택 항목별 막대그래프 (`eda_multiselect_*.png`)
 다중선택 컬럼의 각 항목을 선택한 날의 `감정지수` 평균을 막대로 표시합니다.
@@ -258,7 +254,6 @@ rm -rf ~/.cache/matplotlib
 > 단순 평균 비교이므로 인과관계가 아닌 경향성으로만 해석하시길 바랍니다.
 > 선택 횟수가 적은 항목(5회 미만)은 신뢰도가 낮을 수 있습니다.
 
----
 
 #### 수치형 변수 페어플롯 (`eda_pairplot.png`)
 수치형 변수들 간의 산점도 행렬로, 히트맵보다 상세한 관계를 파악할 수 있습니다.
@@ -269,7 +264,6 @@ rm -rf ~/.cache/matplotlib
 - **점들이 퍼져있을수록**: 상관관계가 약함
 - **직선에서 크게 벗어난 점**: 이상치 가능성
 
----
 
 #### 요일별 박스플롯 (`eda_weekday.png`)
 요일별 `감정지수` 분포를 비교합니다. 데이터가 충분히 쌓인 후(90일+) 해석 신뢰도가 높아집니다.
@@ -467,6 +461,9 @@ python analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv --ex
 #### PCA 2D 분포 (`clustering_pca.png`)
 - 같은 색 점끼리 잘 뭉쳐있을수록 클러스터링 품질이 높음
 - 색이 섞여 있으면 클러스터 간 경계가 불명확한 것 → k 조정 또는 `--exclude_mlb` 사용 고려
+
+---
+
 ### 7. 시계열 분석
 
 #### 실행 방법
@@ -536,3 +533,92 @@ python analysis_timeseries.py --input sample_data_cleaned_impute_none.csv --peri
 - 막대그래프: 빨강(전체 평균 이상) / 파랑(전체 평균 미만)
 - 월요일과 주말의 차이가 클수록 주간 루틴이 감정에 미치는 영향이 큼
 - 데이터가 충분히 쌓인 후(90일+) 해석 신뢰도가 높아집니다
+
+---
+
+### 8. 텍스트 마이닝
+
+#### 실행 전 준비
+```bash
+# 의존성 설치 (최초 1회)
+pip install konlpy wordcloud
+
+# macOS: Java 설치 필요 (KoNLPy 의존성)
+brew install openjdk
+sudo ln -sfn /opt/homebrew/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
+echo 'export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# Linux
+sudo apt install default-jdk
+```
+
+#### 실행 방법
+```bash
+# 기본 (실제 데이터)
+python analysis/analysis_text.py
+
+# 샘플 데이터
+python analysis/analysis_text.py --input sample_data_cleaned_impute_none.csv
+
+# 상위/하위 구간 비율 조정 (기본값: 0.3 → 상위/하위 30%)
+python analysis/analysis_text.py --input sample_data_cleaned_impute_none.csv --threshold 0.4
+```
+
+> 텍스트 마이닝은 스케일링과 무관하므로 `none` 스케일링 파일을 사용합니다.
+> `브레인 덤프` 컬럼이 존재하고 텍스트가 채워져 있으면 변수 구성에 무관하게 작동합니다.
+
+#### 생성 파일
+| 파일 | 설명 |
+|------|------|
+| `outputs/text_top_keywords.png` | 전체 기간 상위 키워드 빈도 막대그래프 |
+| `outputs/text_wordcloud.png` | 전체 기간 워드클라우드 |
+| `outputs/text_highlow_wordcloud.png` | 감정지수 상위 vs 하위 구간 워드클라우드 비교 |
+| `outputs/text_highlow_diff.png` | 감정지수 상위 vs 하위 구간 키워드 차이 막대그래프 |
+| `outputs/text_keyword_mood.png` | 키워드별 평균 감정지수 |
+
+#### 불용어 관리 (`analysis/stopwords.txt`)
+분석 결과에 자주 등장하지만 의미 없는 단어를 제거하기 위해 불용어를 관리합니다.
+
+**두 단계로 관리됩니다.**
+
+(1) **기본 불용어 (`DEFAULT_STOPWORDS`)**: 코드에 내장된 범용 불용어. "것", "수", "이다" 같이 어떤 텍스트에서도 의미 없는 단어들입니다.
+
+(2) **사용자 정의 불용어 (`analysis/stopwords.txt`)**: 분석 결과를 보고 직접 추가하는 도메인 특화 불용어입니다. 코드 수정 없이 텍스트 파일만 편집하면 됩니다.
+
+```
+# stopwords.txt 형식 예시
+# #으로 시작하는 줄은 주석
+그냥
+아니다
+별거
+```
+
+> `stopwords.txt`가 없으면 기본 불용어만 사용됩니다.
+> 분석을 돌린 후 결과에 의미 없는 단어가 보이면 `stopwords.txt`에 추가하고 재실행하세요.
+
+#### 형태소 분석 대상 품사
+- **명사 (Noun)**: 감정과 상황을 나타내는 핵심 단어 (예: 회사, 야근, 친구)
+- **형용사 (Adjective)**: 감정 표현 (예: 힘들다, 좋다, 피곤하다)
+
+> 동사는 기본적으로 제외됩니다. 필요 시 코드의 `TARGET_POS` 리스트에 `"Verb"`를 추가하면 됩니다.
+
+#### 전체 기간 키워드 빈도 (`text_top_keywords.png`)
+- 막대가 길수록 해당 단어가 일기에 자주 등장
+- 상위 키워드가 본인의 일상에서 자주 언급되는 주제를 반영
+- 의미 없는 단어가 상위에 올라오면 `stopwords.txt`에 추가 후 재실행
+
+#### 감정지수 상위 vs 하위 구간 비교 (`text_highlow_wordcloud.png`, `text_highlow_diff.png`)
+- **상위 구간**: 감정지수 상위 `threshold`% 해당 날짜의 텍스트
+- **하위 구간**: 감정지수 하위 `threshold`% 해당 날짜의 텍스트
+- 두 그룹의 키워드 차이를 통해 감정에 영향을 주는 표현 파악 가능
+- 차이 막대그래프에서 최소 3회 이상 등장한 단어만 포함 (신뢰도 확보)
+
+> 인과관계가 아닌 경향성으로 해석하세요.
+> 데이터가 적을수록 상위/하위 구간 샘플도 적어져 신뢰도가 낮을 수 있습니다.
+
+#### 키워드별 평균 감정지수 (`text_keyword_mood.png`)
+- **파란 막대**: 해당 키워드가 등장한 날의 평균 감정지수가 전체 평균 이상
+- **빨간 막대**: 해당 키워드가 등장한 날의 평균 감정지수가 전체 평균 미만
+- 등장 횟수 3회 미만 키워드는 신뢰도가 낮아 제외됩니다.
+- "이 단어가 등장한 날 기분이 좋았다/나빴다"는 경향성으로만 해석하세요.
