@@ -8,7 +8,10 @@ httpcore==1.0.9
 httpx==0.28.1
 idna==3.15
 joblib==1.5.3
+jpype1==1.7.1
 kiwisolver==1.5.0
+konlpy==0.6.0
+lxml==6.1.1
 matplotlib==3.10.9
 notion-client==2.2.1
 numpy==2.4.5
@@ -26,3 +29,4 @@ setuptools==82.0.1
 six==1.17.0
 statsmodels==0.14.6
 threadpoolctl==3.6.0
+wordcloud==1.9.6
