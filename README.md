@@ -186,5 +186,5 @@ python analysis/analysis_text.py --input sample_data_cleaned_impute_none.csv
 
 ## 9. Author
 
-Personal Data Analysis Project
+Personal Data Analysis Project    
 2026
