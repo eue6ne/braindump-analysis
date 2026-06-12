@@ -622,3 +622,73 @@ python analysis/analysis_text.py --input sample_data_cleaned_impute_none.csv --t
 - **빨간 막대**: 해당 키워드가 등장한 날의 평균 감정지수가 전체 평균 미만
 - 등장 횟수 3회 미만 키워드는 신뢰도가 낮아 제외됩니다.
 - "이 단어가 등장한 날 기분이 좋았다/나빴다"는 경향성으로만 해석하세요.
+
+---
+
+### 8-a. NLP 감정 분석 (보조 분석)
+
+#### 개요
+KNU 한국어 감성사전을 활용하여 브레인 덤프 텍스트의 감정 점수를 자동 산출하고, 자기보고 감정지수와 비교하는 보조 분석입니다.
+텍스트 마이닝(analysis_text.py)이 키워드 빈도 기반 탐색이라면, 이 분석은 텍스트 전체의 감정 극성을 수치화합니다.
+
+#### 사전 준비 (최초 1회)
+``` bash
+# KNU 한국어 감성사전 다운로드 (data/ 폴더에 위치 권장)
+git clone https://github.com/park1200656/KnuSentiLex.git data/KnuSentiLex
+```
+
+> 출처: KNU 한국어 감성사전 (KnuSentiLex) — 울산대학교 자연언어처리연구실 
+> https://github.com/park1200656/KnuSentiLex
+
+#### 실행 방법
+```bash
+# 기본 (실제 데이터)
+python analysis/analysis_text_sentiment.py
+
+# 샘플 데이터
+python analysis/analysis_text_sentiment.py --input sample_data_cleaned_impute_none.csv
+
+# 감정 사전 경로 직접 지정
+python analysis/analysis_text_sentiment.py --lexicon data/KnuSentiLex/data/SentiWord_info.json
+
+# 괴리 상위 N일 조정 (기본값: 10)
+python analysis/analysis_text_sentiment.py --gap_top 15
+```
+
+> 텍스트 분석은 스케일링과 무관하므로 none 스케일링 파일을 사용합니다. 
+> 브레인 덤프 컬럼이 존재하면 변수 구성에 무관하게 작동합니다.
+
+#### 생성 파일
+| 파일 | 설명 |
+|------|------|
+| outputs/sentiment_trend.png | 일별 NLP 감정 점수 추이 + 7일 이동평균 |
+| outputs/sentiment_vs_score.png | NLP 감정 점수 vs 자기보고 감정지수 산점도 |
+| outputs/sentiment_gap.png | 두 지표 괴리가 큰 날 상위 N일 |
+
+#### NLP 감정 점수
+형태소 분석 후 KNU 감성사전과 매칭하여 단어별 극성 점수를 평균낸 값입니다.
+| 점수 | 해석 |
+|------|------|
+| 1.0 ~ 2.0 | 매우 긍정적인 텍스트 |
+| 0.1 ~ 1.0 | 긍정적인 텍스트 |
+| -0.1 ~ 0.1 | 중립 또는 감정 표현 적음 |
+| -1.0 ~ -0.1 | 부정적인 텍스트 |
+| -2.0 ~ -1.0 | 매우 부정적인 텍스트 |
+
+#### NLP 점수 추이 (sentiment_trend.png)
+- 빨강 구간: 해당 날의 텍스트가 긍정적
+- 파랑 구간: 해당 날의 텍스트가 부정적
+- 7일 이동평균 (검정 실선): 단기 노이즈를 제거한 전반적인 감정 흐름
+
+#### NLP 점수 vs 자기보고 감정지수 (sentiment_vs_score.png)
+- 상관계수가 높을수록: 텍스트 표현과 실제 감정이 일치
+- 상관계수가 낮을수록: 텍스트 표현 방식과 실제 감정 사이에 괴리 존재 가능
+- 사전 기반 방식의 특성상 상황 서술 위주 텍스트보다 감정 형용사가 많은 텍스트에서 정확도가 높습니다.
+
+#### 감정 괴리 분석 (sentiment_gap.png)
+NLP 점수를 1~10 스케일로 변환한 후 자기보고 감정지수와 차이를 계산합니다.
+- NLP > 자기보고: 텍스트는 긍정적이나 감정지수는 낮게 기록한 날 → 감정 억압 또는 긍정적 표현 습관 가능성
+- NLP < 자기보고: 텍스트는 부정적이나 감정지수는 높게 기록한 날 → 힘들었지만 괜찮다고 느낀 날 가능성
+
+> 사전 기반 NLP 분석은 문맥을 고려하지 않으므로 결과는 참고 수준으로 해석하세요. 
+> 상관계수가 낮더라도 분석 자체가 무의미한 것은 아닙니다. 자기보고와 텍스트 표현의 괴리 자체가 하나의 인사이트가 될 수 있습니다.

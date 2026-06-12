@@ -63,6 +63,7 @@ Notion API를 활용하여 매일 기록한 브레인 덤프 데이터를 수집
 7. 클러스터링 (K-Means) — 하루 패턴 유형화
 8. 시계열 분석 — 감정지수 추세 및 주기성
 9. 텍스트 마이닝 (KoNLPy) — 브레인 덤프 키워드 분석
+10. NLP 감정 분석 (KNU 감성사전) — 텍스트 감정 점수 산출 및 자기보고 감정지수 비교 (보조 분석)
 
 ---
 
@@ -89,6 +90,7 @@ braindump-analysis/
 │   ├── analysis_factor.py         # PCA 요인분석
 │   ├── analysis_regression.py     # OLS / Ridge / Lasso 회귀분석
 │   ├── analysis_text.py           # 텍스트 마이닝
+│   ├── analysis_text_sentiment.py # NLP 감정 분석 (보조 분석)
 │   ├── analysis_timeseries.py     # 시계열 분석
 │   └── stopwords.txt              # 텍스트 마이닝 사용자 정의 불용어
 │
@@ -106,7 +108,7 @@ braindump-analysis/
 └── requirements.txt
 ```
 
-※ `outputs/`, 실제 데이터 CSV 파일은 Git에 포함하지 않습니다.
+※ `outputs/`, 실제 데이터 CSV 파일, `data/KnuSentiLex/`는 Git에 포함하지 않습니다.
 
 ---
 
@@ -136,8 +138,13 @@ source braindump-analysis-venv/bin/activate  # macOS / Linux
 pip install -r requirements.txt
 ```
 
-### 4. 실제 데이터로 실행 (Notion 연동)
+### 4. KNU 감성사전 다운로드 (NLP 감정 분석 실행 시 필요)
 
+```bash
+git clone https://github.com/park1200656/KnuSentiLex.git data/KnuSentiLex
+```
+
+### 5. 실제 데이터로 실행 (Notion 연동)
 `.env` 파일을 프로젝트 루트에 생성합니다. 해당 파일에 노션 토큰과 노션 데이터베이스 ID를 입력하여 저장합니다.
 
 ```
@@ -161,9 +168,12 @@ python analysis/analysis_regression.py --input notion_brain_dump_raw_cleaned_imp
 python analysis/analysis_clustering.py --input notion_brain_dump_raw_cleaned_impute_minmax.csv --exclude_mlb
 python analysis/analysis_timeseries.py
 python analysis/analysis_text.py
+
+# NLP 감정 분석 (보조 분석, KnuSentiLex 다운로드 필요)
+python analysis/analysis_text_sentiment.py
 ```
 
-### 5. 샘플 데이터로 실행
+### 6. 샘플 데이터로 실행
 
 ```bash
 # 전처리
@@ -178,6 +188,9 @@ python analysis/analysis_regression.py --input sample_data_cleaned_impute_standa
 python analysis/analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv --exclude_mlb
 python analysis/analysis_timeseries.py --input sample_data_cleaned_impute_none.csv
 python analysis/analysis_text.py --input sample_data_cleaned_impute_none.csv
+
+# NLP 감정 분석 (보조 분석, KnuSentiLex 다운로드 필요)
+python analysis/analysis_text_sentiment.py --input sample_data_cleaned_impute_none.csv
 ```
 
 > 노션 DB 설정, 분석 해석 기준, 스케일링 옵션 선택 등 자세한 내용은 **[GUIDELINE.md](GUIDELINE.md)** 를 참고하세요.
