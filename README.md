@@ -69,7 +69,7 @@ Notion API를 활용하여 매일 기록한 브레인 덤프 데이터를 수집
 
 ## 5. Key Findings
 
-> 실제 데이터 분석 완료 후 업데이트 예정입니다.
+직접 기록한 100일간의 실제 데이터를 바탕으로 분석 진행하였습니다. 자세한 내용은 **[FINDINGS.md](FINDINGS.md)** 에서 확인하실 수 있습니다.
 
 ---
 
@@ -97,11 +97,25 @@ braindump-analysis/
 ├── data/
 │   └── sample_data.csv            # 코드 재현용 샘플 데이터
 │
+├── findings_images/
+│   └── *.png                      # key findings에서 사용한 이미지    
+│
 ├── outputs/                       # 시각화 결과 저장
 │
+├── pages/                         # Streamlit을 이용한 웹앱 분석별 파일
+│   └── 1_데이터수집및전처리.py
+│   └── 2_EDA.py
+│   └── 3_요인분석.py
+│   └── 4_회귀분석.py
+│   └── 5_클러스터링.py
+│   └── 6_시계열분석.py
+│   └── 7_텍스트마이닝.py
+│
 ├── .gitignore
+├── app.py                         # Streamlit을 이용한 웹앱
 ├── data_preprocessing.py          # 결측치 / 이상치 / 인코딩 / 스케일링
 ├── data_visualization.py          # EDA 시각화
+├── FINDINGS.md                    # key findings
 ├── GUIDELINE.md                   # 노션 DB 설정 및 분석 해석 가이드
 ├── notion_loader.py               # Notion API 데이터 수집
 ├── README.md
