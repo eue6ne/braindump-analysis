@@ -1,12 +1,12 @@
 braindump-analysis-venv/
 .env
 __pycache__/
-*.png
+outputs/
 sample_data_*.csv
 
 # 출처: KNU 한국어 감성사전 (KnuSentiLex) - (텍스트 감정 분석 실행 시 필요 / analysis_text_sentiment.py)
 data/KnuSentiLex
 
 # 실제 데이터
-notion_brain_dump_raw.csv
+notion_brain_dump_raw*.csv
 notion_brain_dump_cleaned_*.csv
