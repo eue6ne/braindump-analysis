@@ -232,8 +232,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--input",
         type = str,
-        default = "notion_brain_dump_cleaned_impute_none.csv",
-        help = "입력 CSV 파일 경로 (기본값: notion_brain_dump_cleaned_impute_none.csv)"
+        default = "notion_brain_dump_raw_cleaned_impute_none.csv",
+        help = "입력 CSV 파일 경로 (기본값: notion_brain_dump_raw_cleaned_impute_none.csv)"
     )
     parser.add_argument(
         "--lexicon",
