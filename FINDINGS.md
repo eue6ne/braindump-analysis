@@ -66,7 +66,7 @@ K-Means 클러스터링 결과 k=2로 두 가지 하루 패턴이 뚜렷하게 �
 
 → 친구와 함께하거나 좋아하는 활동(덕질, 공연, 게임)을 한 날 감정지수가 높은 경향
 
-![감정지수 상위 vs 하위 키워드 비교](findings_images/text_highlow_diff.png)
+![감정지수 상위 vs 하위 키워드 비교](findings_images/text_highlow_wordcloud.png)
 ![키워드별 평균 감정지수](findings_images/text_keyword_mood.png)
 
 ---
