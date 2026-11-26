@@ -4,6 +4,7 @@ warnings.filterwarnings("ignore")
 import os
 import platform
 import argparse
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,6 +20,9 @@ os.makedirs(OUTPUT_DIR, exist_ok = True)
 TARGET_COL  = "감정지수"
 TEXT_COL    = "브레인 덤프"
 
+# 사용자 정의 불용어 파일 (이 스크립트와 같은 폴더, 실행 위치와 무관하게 찾음)
+STOPWORDS_PATH = Path(__file__).resolve().parent / "stopwords.txt"
+
 # 분석 대상 품사 (명사 + 형용사)
 TARGET_POS = ["Noun", "Adjective"]
 
@@ -31,7 +35,7 @@ DEFAULT_STOPWORDS = {
     "같다", "보다", "되다", "같은", "있는", "없는", "하는"
 }
 
-def load_stopwords(stopwords_path = "stopwords.txt"):
+def load_stopwords(stopwords_path = STOPWORDS_PATH):
     """
     외부 불용어 파일 로드.
     stopwords.txt가 없으면 기본 불용어만 사용.
@@ -294,7 +298,7 @@ if __name__ == "__main__":
 
         stopwords = load_stopwords()
 
-        print("\\n[형태소 분석] 전체 텍스트 토큰 추출 중...")
+        print("\n[형태소 분석] 전체 텍스트 토큰 추출 중...")
         all_tokens = extract_tokens(df[TEXT_COL].tolist(), stopwords)
         print(f"  총 {len(all_tokens)}개 토큰 추출 완료")
 
