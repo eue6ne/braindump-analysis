@@ -1,6 +1,7 @@
 braindump-analysis-venv/
 .env
 __pycache__/
+.DS_Store
 outputs/
 sample_data_*.csv
 
