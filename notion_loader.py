@@ -42,9 +42,10 @@ def parse_notion_properties(results):
             prop_type = prop_content.get("type")
 
             # 텍스트 / 타이틀 타입 추출
+            # 서식(굵게, 링크 등)이 있으면 여러 조각으로 나뉘므로 모든 조각을 이어 붙임
             if prop_type in ["title", "rich_text"]:
                 text_list = prop_content.get(prop_type, [])
-                row_data[prop_name] = text_list[0].get("plain_text", "") if text_list else ""
+                row_data[prop_name] = "".join(t.get("plain_text", "") for t in text_list)
 
             # 숫자 타입 추출
             elif prop_type == "number":
@@ -77,6 +78,9 @@ def parse_notion_properties(results):
 
 
 if __name__ == "__main__":
+    if not NOTION_TOKEN or not DATABASE_ID:
+        raise SystemExit("NOTION_TOKEN / NOTION_DATABASE_ID가 설정되지 않았습니다. .env 파일을 확인해주세요.")
+
     raw_results = fetch_notion_data(DATABASE_ID)
     df = parse_notion_properties(raw_results)
 
