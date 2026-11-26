@@ -125,10 +125,15 @@
 # 1단계: 노션에서 데이터 수집
 python notion_loader.py
 
-# 2단계: 전처리 (분석 목적에 따라 옵션 선택)
+# 2단계: 전처리 (분석별 권장 스케일링 파일 3종을 생성: none / standard / minmax)
+# 이상치 질문이 나오면 세 번 모두 같은 방식으로 답하세요.
 python data_preprocessing.py --mode impute --outlier detect --scaler none
+python data_preprocessing.py --mode impute --outlier detect --scaler standard
+python data_preprocessing.py --mode impute --outlier detect --scaler minmax
 # 샘플 데이터 사용 시
-python data_preprocessing.py --mode impute --outlier detect --scaler none --input sample_data.csv
+python data_preprocessing.py --mode impute --outlier detect --scaler none --input data/sample_data.csv
+python data_preprocessing.py --mode impute --outlier detect --scaler standard --input data/sample_data.csv
+python data_preprocessing.py --mode impute --outlier detect --scaler minmax --input data/sample_data.csv
 
 # 3단계: EDA 시각화
 python data_visualization.py
@@ -136,11 +141,11 @@ python data_visualization.py
 python data_visualization.py --input sample_data_cleaned_impute_none.csv
 
 # 4단계: 분석 (각 분석별 입력 파일 지정)
-python analysis_factor.py
-python analysis_regression.py
-python analysis_clustering.py
-python analysis_timeseries.py
-python analysis_text.py
+python analysis/analysis_factor.py
+python analysis/analysis_regression.py
+python analysis/analysis_clustering.py
+python analysis/analysis_timeseries.py
+python analysis/analysis_text.py
 # 샘플 데이터 사용 시 --input sample_data_cleaned_*.csv 추가
 ```
 
@@ -186,7 +191,7 @@ rm -rf ~/.cache/matplotlib
 |------|------|--------|------|
 | EDA / 시각화 | impute | none | |
 | 상관계수 | impute | none | |
-| 요인분석 / PCA | impute | standard | 범주형 컬럼은 분석 파일에서 별도 처리 |
+| 요인분석 / PCA | impute | none | 표준화는 스크립트 내부(StandardScaler)에서 적용 |
 | 회귀분석 | impute | standard | 범주형 컬럼은 분석 파일에서 원핫 인코딩 |
 | 클러스터링 | impute | minmax | |
 | 텍스트 마이닝 | — | — | `브레인 덤프` 컬럼 별도 처리 |
@@ -280,10 +285,10 @@ rm -rf ~/.cache/matplotlib
 #### 실행 방법
 ```bash
 # 기본 (실제 데이터)
-python analysis_factor.py
+python analysis/analysis_factor.py
 
 # 샘플 데이터
-python analysis_factor.py --input sample_data_cleaned_impute_none.csv
+python analysis/analysis_factor.py --input sample_data_cleaned_impute_none.csv
 ```
 
 > 요인분석은 스케일링이 내부적으로 적용되므로 `none` 스케일링 파일을 사용합니다.
@@ -328,10 +333,10 @@ python analysis_factor.py --input sample_data_cleaned_impute_none.csv
 #### 실행 방법
 ```bash
 # 기본 (실제 데이터, standard 스케일링 권장)
-python analysis_regression.py
+python analysis/analysis_regression.py
 
 # 샘플 데이터
-python analysis_regression.py --input sample_data_cleaned_impute_standard.csv
+python analysis/analysis_regression.py --input sample_data_cleaned_impute_standard.csv
 ```
 
 > 회귀분석은 변수 간 스케일 차이가 결과에 영향을 주므로 `standard` 스케일링 파일을 사용합니다.
@@ -402,16 +407,16 @@ VIF > 10 변수가 있을 때만 생성됩니다.
 #### 실행 방법
 ```bash
 # 기본 (실제 데이터, minmax 스케일링 권장)
-python analysis_clustering.py
+python analysis/analysis_clustering.py
 
 # 샘플 데이터
-python analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv
+python analysis/analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv
 
 # 다중선택 파생 컬럼 제외 (권장)
-python analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv --exclude_mlb
+python analysis/analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv --exclude_mlb
 
 # 클러스터 수 직접 지정
-python analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv --exclude_mlb --k 3
+python analysis/analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv --exclude_mlb --k 3
 ```
 
 > 클러스터링은 거리 기반 알고리즘이므로 변수 간 스케일을 통일하는 `minmax` 스케일링 파일 사용을 권장합니다.
@@ -469,13 +474,13 @@ python analysis_clustering.py --input sample_data_cleaned_impute_minmax.csv --ex
 #### 실행 방법
 ```bash
 # 기본 (실제 데이터, none 스케일링 권장)
-python analysis_timeseries.py
+python analysis/analysis_timeseries.py
 
 # 샘플 데이터
-python analysis_timeseries.py --input sample_data_cleaned_impute_none.csv
+python analysis/analysis_timeseries.py --input sample_data_cleaned_impute_none.csv
 
 # 분해 주기 및 lag 수 직접 지정
-python analysis_timeseries.py --input sample_data_cleaned_impute_none.csv --period 7 --lags 21
+python analysis/analysis_timeseries.py --input sample_data_cleaned_impute_none.csv --period 7 --lags 21
 ```
 
 > 시계열 분석은 원래 스케일 그대로 봐야 해석이 직관적이므로 `none` 스케일링 파일을 사용합니다.

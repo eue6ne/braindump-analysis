@@ -40,7 +40,8 @@ Notion API를 활용하여 매일 기록한 브레인 덤프 데이터를 수집
 
 `data/sample_data.csv`는 코드 재현용 가상 데이터입니다.
 입사 3개월차 직장인 적응기 시나리오를 직접 설계하고 Claude의 도움을 받아 생성했습니다.
-실제 분석 결과는 개인 기록 데이터를 기반으로 도출됩니다.
+이 샘플로 분석 파이프라인을 실행한 결과는 **[FINDINGS.md](FINDINGS.md)** 에 정리했습니다.
+가상 데이터의 패턴은 시나리오에 따라 설계된 것이므로, 결과의 의미보다 분석 방법을 보여주기 위한 용도입니다.
 
 | 구간 | 기간 | 특징 |
 |------|------|------|
@@ -69,14 +70,20 @@ Notion API를 활용하여 매일 기록한 브레인 덤프 데이터를 수집
 
 ## 5. Key Findings
 
-직접 기록한 100일간의 실제 데이터를 바탕으로 분석 진행하였습니다. 자세한 내용은 **[FINDINGS.md](FINDINGS.md)** 에서 확인하실 수 있습니다.
+샘플 데이터(가상 90일)로 전체 분석 파이프라인을 실행한 결과는 **[FINDINGS.md](FINDINGS.md)** 에서 확인하실 수 있습니다.
+
+- 회귀분석: 수면시간과 업무강도가 감정지수와 가장 강한 연관을 보였다. (n = 90, Adj. R² = 0.760)
+- 요일별 감정지수는 평일과 주말에서 뚜렷하게 달랐다. (Kruskal-Wallis p < 0.001)
+- 사전 기반 NLP 감정 점수는 자기보고 감정지수와 거의 무관했다. (r = 0.03)
+
+> 실제 개인 기록에도 같은 파이프라인을 적용해 검증했으며, 결과는 개인정보 보호를 위해 공개하지 않습니다.
 
 ---
 
 ## 6. Limitations
 
-본 분석은 개인 데이터 기반의 탐색적 분석이며, 표본 크기 및 개인 특성에 따라 결과의 일반화에 한계가 있습니다.
-통계적 유의성보다는 개인 패턴 파악 및 생활 습관 개선에 초점을 둔 프로젝트입니다.
+본 분석은 개인 데이터 기반의 탐색적 분석이며, 공개한 결과는 가상 샘플 데이터에 대한 것입니다.
+90일의 소표본이고 시계열 자기상관(Durbin-Watson 1.2)이 있어 p-value는 낙관적일 수 있으므로, 통계적 확정보다는 패턴 탐색과 분석 방법 시연에 초점을 둔 프로젝트입니다.
 
 ---
 
@@ -144,6 +151,7 @@ cd braindump-analysis
 ```bash
 python -m venv braindump-analysis-venv
 source braindump-analysis-venv/bin/activate  # macOS / Linux
+# braindump-analysis-venv\Scripts\activate     # Windows
 ```
 
 ### 3. Install dependencies
@@ -170,8 +178,10 @@ NOTION_DATABASE_ID=your_database_id
 # 데이터 수집
 python notion_loader.py
 
-# 전처리
+# 전처리 (분석별 스케일링 파일 3종 생성, 이상치 질문에는 매번 같은 방식으로 답하세요)
 python data_preprocessing.py --mode impute --outlier detect --scaler none
+python data_preprocessing.py --mode impute --outlier detect --scaler standard
+python data_preprocessing.py --mode impute --outlier detect --scaler minmax
 
 # EDA 시각화
 python data_visualization.py
@@ -190,8 +200,10 @@ python analysis/analysis_text_sentiment.py
 ### 6. 샘플 데이터로 실행
 
 ```bash
-# 전처리
+# 전처리 (분석별 스케일링 파일 3종 생성)
 python data_preprocessing.py --mode impute --outlier none --scaler none --input data/sample_data.csv
+python data_preprocessing.py --mode impute --outlier none --scaler standard --input data/sample_data.csv
+python data_preprocessing.py --mode impute --outlier none --scaler minmax --input data/sample_data.csv
 
 # EDA 시각화
 python data_visualization.py --input sample_data_cleaned_impute_none.csv
@@ -205,6 +217,12 @@ python analysis/analysis_text.py --input sample_data_cleaned_impute_none.csv
 
 # NLP 감정 분석 (보조 분석, KnuSentiLex 다운로드 필요)
 python analysis/analysis_text_sentiment.py --input sample_data_cleaned_impute_none.csv
+```
+
+### 7. 웹앱 실행 (Streamlit)
+
+```bash
+streamlit run app.py
 ```
 
 > 노션 DB 설정, 분석 해석 기준, 스케일링 옵션 선택 등 자세한 내용은 **[GUIDELINE.md](GUIDELINE.md)** 를 참고하세요.
