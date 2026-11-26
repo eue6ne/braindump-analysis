@@ -12,6 +12,7 @@ import seaborn as sns
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.stattools import adfuller
+from scipy import stats
 
 # 시각화 이미지 저장 경로
 OUTPUT_DIR = "outputs"
@@ -185,6 +186,32 @@ def plot_weekday_pattern(df):
     plt.close()
     print("[요일별 패턴] 저장 완료")
 
+def test_weekday_effect(df):
+    """
+    요일별 감정지수 차이를 Kruskal-Wallis 검정으로 확인.
+    - 귀무가설: 요일 간 감정지수 분포가 같다
+    - p-value < 0.05: 요일에 따라 감정지수 차이가 있다고 볼 수 있음
+    요일별 표본이 적으므로(약 10~15일) 정규성 가정이 필요 없는 비모수 검정을 사용.
+    """
+    day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    day_label = ["월", "화", "수", "목", "금", "토", "일"]
+
+    day_name = df.index.day_name()
+    summary = df[TARGET_COL].groupby(day_name).agg(["mean", "std", "count"]).reindex(day_order)
+    summary.index = day_label
+
+    groups = [g[TARGET_COL].values for _, g in df.groupby(day_name) if len(g) > 0]
+    stat, p_value = stats.kruskal(*groups)
+
+    print("\n[요일별 감정지수 및 차이 검정]")
+    print(summary.dropna().round(2).to_string())
+    print(f"  Kruskal-Wallis H = {stat:.2f} / p-value = {p_value:.4g}")
+    if p_value < 0.05:
+        print("  → 요일에 따라 감정지수 차이가 있다고 볼 수 있습니다.")
+    else:
+        print("  → 요일 간 차이가 통계적으로 유의하지 않습니다. (뚜렷한 요일 패턴으로 해석하지 않는 것을 권장)")
+    return p_value
+
 def print_summary(y, df):
     """핵심 통계 요약 출력"""
     print("\n" + "=" * 50)
@@ -236,6 +263,7 @@ if __name__ == "__main__":
         plot_decomposition(y, period = args.period)
         plot_acf_pacf(y, lags = args.lags)
         plot_weekday_pattern(df)
+        test_weekday_effect(df)
         print_summary(y, df)
         print(f"\n[최종 완료] 시계열 분석 시각화가 outputs/ 폴더에 저장되었습니다.")
 
