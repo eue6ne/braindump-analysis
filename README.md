@@ -109,7 +109,7 @@ braindump-analysis/
 │
 ├── outputs/                       # 시각화 결과 저장
 │
-├── pages/                         # Streamlit을 이용한 웹앱 분석별 파일
+├── pages/                         # (선택) Streamlit 웹앱의 분석별 페이지
 │   └── 1_데이터수집및전처리.py
 │   └── 2_EDA.py
 │   └── 3_요인분석.py
@@ -119,14 +119,15 @@ braindump-analysis/
 │   └── 7_텍스트마이닝.py
 │
 ├── .gitignore
-├── app.py                         # Streamlit을 이용한 웹앱
+├── app.py                         # (선택) Streamlit 웹앱
 ├── data_preprocessing.py          # 결측치 / 이상치 / 인코딩 / 스케일링
 ├── data_visualization.py          # EDA 시각화
 ├── FINDINGS.md                    # key findings
 ├── GUIDELINE.md                   # 노션 DB 설정 및 분석 해석 가이드
 ├── notion_loader.py               # Notion API 데이터 수집
 ├── README.md
-└── requirements.txt
+├── requirements-app.txt           # (선택) 웹앱용 추가 패키지 (streamlit)
+└── requirements.txt               # 핵심 분석용 패키지
 ```
 
 ※ `outputs/`, 실제 데이터 CSV 파일, `data/KnuSentiLex/`는 Git에 포함하지 않습니다.
@@ -219,11 +220,16 @@ python analysis/analysis_text.py --input sample_data_cleaned_impute_none.csv
 python analysis/analysis_text_sentiment.py --input sample_data_cleaned_impute_none.csv
 ```
 
-### 7. 웹앱 실행 (Streamlit)
+### 7. (선택) 웹앱 실행 (Streamlit)
+
+웹앱은 분석 결과를 인터랙티브하게 체험하기 위한 부가 기능입니다.
 
 ```bash
+pip install -r requirements-app.txt
 streamlit run app.py
 ```
+
+Notion 계정이 없어도 사이드바의 `데이터수집및전처리` 페이지에서 샘플 데이터를 불러와 모든 분석을 체험할 수 있습니다.
 
 > 노션 DB 설정, 분석 해석 기준, 스케일링 옵션 선택 등 자세한 내용은 **[GUIDELINE.md](GUIDELINE.md)** 를 참고하세요.
 
