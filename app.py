@@ -1,4 +1,7 @@
+import os
 import streamlit as st
+
+DEMO_MODE = os.getenv("DEMO_MODE", "0") == "1"
 
 st.set_page_config(
     page_title = "브레인 덤프 감정 분석",
@@ -36,33 +39,42 @@ st.markdown("""
 """)
 
 st.markdown("---")
-st.markdown("## 🔗 Notion 연결")
-st.info("분석을 시작하려면 Notion API 토큰과 데이터베이스 ID를 입력하세요. 입력한 정보는 이 세션에서만 사용되며 저장되지 않습니다.")
+st.markdown("## 🚀 시작하기")
+st.info(
+    "Notion 계정이 없어도 괜찮습니다. 왼쪽 사이드바의 **데이터수집및전처리** 페이지에서 "
+    "'샘플 데이터 불러오기'를 누르면 가상 샘플 데이터로 모든 분석을 체험할 수 있습니다."
+)
 
-with st.form("notion_form"):
-    token_input = st.text_input(
-        "Notion API 토큰",
-        type = "password",
-        value = st.session_state["notion_token"],
-        placeholder = "ntn_xxxxxxxxxxxx"
-    )
-    db_input = st.text_input(
-        "데이터베이스 ID",
-        value = st.session_state["database_id"],
-        placeholder = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    )
-    submitted = st.form_submit_button("연결 저장")
+if DEMO_MODE:
+    st.caption("공개 데모에서는 개인 Notion 연결 기능이 비활성화되어 있습니다. 내 데이터로 분석하려면 저장소를 내려받아 로컬에서 실행하세요.")
+else:
+    with st.expander("🔗 내 Notion 데이터로 분석하기 (선택)"):
+        st.info("Notion API 토큰과 데이터베이스 ID를 입력하세요. 입력한 정보는 이 세션에서만 사용되며 저장되지 않습니다.")
 
-    if submitted:
-        if token_input and db_input:
-            st.session_state["notion_token"] = token_input
-            st.session_state["database_id"] = db_input
-            st.success("✅ Notion 연결 정보가 저장되었습니다. 왼쪽 사이드바에서 데이터 수집 및 전처리를 먼저 진행하세요.")
-        else:
-            st.error("토큰과 데이터베이스 ID를 모두 입력해주세요.")
+        with st.form("notion_form"):
+            token_input = st.text_input(
+                "Notion API 토큰",
+                type = "password",
+                value = st.session_state["notion_token"],
+                placeholder = "ntn_xxxxxxxxxxxx"
+            )
+            db_input = st.text_input(
+                "데이터베이스 ID",
+                value = st.session_state["database_id"],
+                placeholder = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            )
+            submitted = st.form_submit_button("연결 저장")
 
-if st.session_state["notion_token"] and st.session_state["database_id"]:
-    st.success(f"✅ 연결 정보 저장됨 — 사이드바에서 분석을 시작하세요.")
+            if submitted:
+                if token_input and db_input:
+                    st.session_state["notion_token"] = token_input
+                    st.session_state["database_id"] = db_input
+                    st.success("✅ Notion 연결 정보가 저장되었습니다. 왼쪽 사이드바에서 데이터 수집 및 전처리를 먼저 진행하세요.")
+                else:
+                    st.error("토큰과 데이터베이스 ID를 모두 입력해주세요.")
+
+        if st.session_state["notion_token"] and st.session_state["database_id"]:
+            st.success("✅ 연결 정보 저장됨 — 사이드바에서 분석을 시작하세요.")
 
 st.markdown("---")
 st.caption("Personal Data Analysis Project · 2026")

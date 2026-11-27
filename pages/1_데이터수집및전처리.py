@@ -4,6 +4,9 @@ import numpy as np
 import sys
 import os
 
+DEMO_MODE = os.getenv("DEMO_MODE", "0") == "1"
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from data_preprocessing import (
@@ -20,22 +23,23 @@ st.set_page_config(page_title = "데이터 수집 및 전처리", page_icon = "�
 st.title("🗃️ 데이터 수집 및 전처리")
 st.markdown("---")
 
-# ── 1. 데이터 수집 ──────────────────────────────────────────
+# 1. 데이터 수집
 st.markdown("## 1️⃣ 데이터 수집")
 
 col1, col2 = st.columns(2)
 
 with col1:
     st.markdown("### Notion API로 수집")
-    if not st.session_state.get("notion_token") or not st.session_state.get("database_id"):
+    if DEMO_MODE:
+        st.caption("공개 데모에서는 Notion 연결이 비활성화되어 있습니다. 오른쪽의 샘플 데이터를 사용하세요.")
+    elif not st.session_state.get("notion_token") or not st.session_state.get("database_id"):
         st.warning("홈 화면에서 Notion 연결 정보를 먼저 입력해주세요.")
     else:
-        if st.button("🔄 Notion에서 데이터 수집", use_container_width = True):
+        if st.button("🔄 Notion에서 데이터 수집", width = "stretch"):
             with st.spinner("노션 데이터베이스에서 데이터를 가져오는 중..."):
                 try:
-                    from notion_client import Client
                     from notion_loader import fetch_notion_data, parse_notion_properties
-                    results = fetch_notion_data(st.session_state["database_id"])
+                    results = fetch_notion_data(st.session_state["database_id"], token = st.session_state["notion_token"])
                     df = parse_notion_properties(results)
                     st.session_state["raw_df"] = df
                     st.session_state["cleaned_df"] = None
@@ -47,8 +51,8 @@ with col1:
 with col2:
     st.markdown("### 샘플 데이터로 시작")
     st.caption("Notion 연결 없이 샘플 데이터로 분석을 진행합니다.")
-    if st.button("📂 샘플 데이터 불러오기", use_container_width = True):
-        sample_path = "data/sample_data.csv"
+    if st.button("📂 샘플 데이터 불러오기", width = "stretch"):
+        sample_path = os.path.join(ROOT_DIR, "data", "sample_data.csv")
         if os.path.exists(sample_path):
             df = pd.read_csv(sample_path)
             st.session_state["raw_df"] = df
@@ -61,12 +65,12 @@ with col2:
 if st.session_state.get("raw_df") is not None:
     raw_df = st.session_state["raw_df"]
     st.markdown("#### 📋 수집된 데이터 미리보기")
-    st.dataframe(raw_df.head(10), use_container_width = True)
+    st.dataframe(raw_df.head(10), width = "stretch")
     st.caption(f"총 {len(raw_df)}행 · {len(raw_df.columns)}개 컬럼")
 
 st.markdown("---")
 
-# ── 2. 전처리 옵션 ─────────────────────────────────────────
+# 2. 전처리 옵션 
 st.markdown("## 2️⃣ 전처리 옵션 선택")
 
 if st.session_state.get("raw_df") is None:
@@ -93,10 +97,10 @@ st.caption("💡 분석별 권장 스케일링: EDA·시계열 → none / 회귀
 
 st.markdown("---")
 
-# ── 3. 이상치 탐지 ─────────────────────────────────────────
+# 3. 이상치 탐지 
 st.markdown("## 3️⃣ 이상치 탐지 및 처리")
 
-if st.button("🔍 이상치 탐지 실행", use_container_width = True):
+if st.button("🔍 이상치 탐지 실행", width = "stretch"):
     df = st.session_state["raw_df"].copy()
 
     # 기본 필터링
@@ -166,7 +170,7 @@ if st.session_state.get("outlier_info") is not None:
             )
             selected[col] = [info["indices"][options.index(c)] for c in chosen]
 
-        if st.button("✅ 이상치 처리 적용 후 전처리 완료", use_container_width = True, type = "primary"):
+        if st.button("✅ 이상치 처리 적용 후 전처리 완료", width = "stretch", type = "primary"):
             df = st.session_state["pre_outlier_df"].copy()
 
             if "건너뜀" not in method:
@@ -193,7 +197,7 @@ if st.session_state.get("outlier_info") is not None:
 
     else:
         # 이상치 없으면 바로 전처리 완료
-        if st.button("✅ 전처리 완료 (이상치 없음)", use_container_width = True, type = "primary"):
+        if st.button("✅ 전처리 완료 (이상치 없음)", width = "stretch", type = "primary"):
             df = st.session_state["pre_outlier_df"].copy()
             df = handle_encode_multiselect(df)
             df = handle_scaling(df, scaler)
@@ -203,11 +207,11 @@ if st.session_state.get("outlier_info") is not None:
 
 st.markdown("---")
 
-# ── 4. 전처리 결과 ─────────────────────────────────────────
+# 4. 전처리 결과 
 if st.session_state.get("cleaned_df") is not None:
     cleaned_df = st.session_state["cleaned_df"]
     st.markdown("## 4️⃣ 전처리 결과")
-    st.dataframe(cleaned_df.head(10), use_container_width = True)
+    st.dataframe(cleaned_df.head(10), width = "stretch")
     st.caption(f"총 {len(cleaned_df)}행 · {len(cleaned_df.columns)}개 컬럼 · 스케일링: {st.session_state['clean_suffix']}")
 
     missing = cleaned_df.isnull().sum()

@@ -11,14 +11,16 @@ DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
 # 노션 클라이언트 초기화
 notion = Client(auth = NOTION_TOKEN)
 
-def fetch_notion_data(database_id):
+def fetch_notion_data(database_id, token = None):
+    """token이 주어지면 그 토큰으로, 없으면 .env의 토큰으로 노션에 연결 (웹앱에서 입력한 토큰 사용 목적)"""
+    client = Client(auth = token) if token else notion
     print("노션 데이터베이스에서 데이터를 가져오는 중...")
     results = []
     has_more = True
     start_cursor = None
 
     while has_more:
-        response = notion.databases.query(
+        response = client.databases.query(
             database_id = database_id,
             start_cursor = start_cursor
         )
