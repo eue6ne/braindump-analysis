@@ -35,7 +35,7 @@ st.markdown("""
 VIF > 10 변수가 감지되면 Ridge / Lasso 정규화 회귀도 자동 실행됩니다.
 """)
 
-if st.button("📐 회귀분석 실행", use_container_width = True, type = "primary"):
+if st.button("📐 회귀분석 실행", width = "stretch", type = "primary"):
 
     # 원핫 인코딩
     cat_cols = [c for c in df.select_dtypes(exclude = [np.number]).columns if c not in EXCLUDE_COLS]
@@ -55,7 +55,7 @@ if st.button("📐 회귀분석 실행", use_container_width = True, type = "pri
         "변수": X.columns,
         "VIF": [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
     }).sort_values("VIF", ascending = False).reset_index(drop = True)
-    st.dataframe(vif_df, use_container_width = True)
+    st.dataframe(vif_df, width = "stretch")
 
     high_vif = vif_df[vif_df["VIF"] > 10]
     if not high_vif.empty:
@@ -74,6 +74,10 @@ if st.button("📐 회귀분석 실행", use_container_width = True, type = "pri
     col1.metric("R²", f"{model.rsquared:.3f}")
     col2.metric("Adj. R²", f"{model.rsquared_adj:.3f}")
     col3.metric("F-통계량 p값", f"{model.f_pvalue:.4f}")
+    st.caption(
+        "standard 스케일링 데이터를 사용하면 회귀계수는 독립변수가 1 표준편차 변할 때 감정지수가 변하는 정도(점)입니다. "
+        "R²는 학습 데이터 기준이며, Durbin-Watson이 2보다 많이 작으면 연속된 날의 잔차가 비슷해 p-value가 낙관적일 수 있습니다."
+    )
 
     sig_vars = model.pvalues[1:][model.pvalues[1:] < 0.05]
     if not sig_vars.empty:

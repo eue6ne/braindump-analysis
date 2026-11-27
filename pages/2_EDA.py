@@ -31,7 +31,7 @@ set_universal_font()
 
 st.success(f"✅ 전처리된 데이터 로드 완료 — {len(df)}행 · 스케일링: {st.session_state.get('clean_suffix', '')}")
 
-if st.button("📊 EDA 시각화 실행", use_container_width = True, type = "primary"):
+if st.button("📊 EDA 시각화 실행", width = "stretch", type = "primary"):
 
     target_col = "감정지수"
     if target_col not in df.columns:

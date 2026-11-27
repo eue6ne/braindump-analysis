@@ -33,7 +33,7 @@ st.markdown("""
 변수 간 구조를 파악하여 이후 회귀분석의 변수 선택 근거로 활용합니다.
 """)
 
-if st.button("🔍 요인분석 실행", use_container_width = True, type = "primary"):
+if st.button("🔍 요인분석 실행", width = "stretch", type = "primary"):
     feature_cols = [c for c in df.select_dtypes(include = [np.number]).columns if c not in EXCLUDE_COLS]
 
     if len(feature_cols) < 2:

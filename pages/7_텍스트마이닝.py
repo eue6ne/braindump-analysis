@@ -60,7 +60,7 @@ with col1:
 with col2:
     stopwords_path = st.text_input("불용어 파일 경로", value = "analysis/stopwords.txt")
 
-if st.button("📝 텍스트 마이닝 실행", use_container_width = True, type = "primary"):
+if st.button("📝 텍스트 마이닝 실행", width = "stretch", type = "primary"):
     from konlpy.tag import Okt
 
     font_path = get_font_path()

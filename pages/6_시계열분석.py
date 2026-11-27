@@ -41,7 +41,7 @@ with col1:
 with col2:
     lags = st.number_input("ACF / PACF 최대 lag 수", min_value = 5, max_value = 60, value = 21)
 
-if st.button("📈 시계열 분석 실행", use_container_width = True, type = "primary"):
+if st.button("📈 시계열 분석 실행", width = "stretch", type = "primary"):
 
     target_col = "감정지수"
     y = df[target_col].asfreq("D")
@@ -155,6 +155,17 @@ if st.button("📈 시계열 분석 실행", use_container_width = True, type = 
     plt.tight_layout()
     st.pyplot(fig)
     plt.close()
+
+    # 요일 간 차이 검정 (표본이 적어 비모수 검정 사용)
+    from scipy import stats
+    day_groups = [g[target_col].values for _, g in df_day.groupby("요일")]
+    if len(day_groups) >= 2:
+        h_stat, kw_p = stats.kruskal(*day_groups)
+        st.caption(f"요일 간 차이 검정 (Kruskal-Wallis): H = {h_stat:.2f}, p-value = {kw_p:.4g}")
+        if kw_p < 0.05:
+            st.success("요일에 따라 감정지수 차이가 있다고 볼 수 있습니다.")
+        else:
+            st.info("요일 간 차이가 통계적으로 유의하지 않습니다. 뚜렷한 요일 패턴으로 해석하지 않는 것을 권장합니다.")
 
     # 핵심 통계 요약
     st.markdown("---")

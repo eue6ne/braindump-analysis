@@ -46,7 +46,7 @@ with col1:
 with col2:
     k_manual = st.number_input("클러스터 수 직접 지정 (0 = 자동 탐색)", min_value = 0, max_value = 20, value = 0)
 
-if st.button("🗂️ 클러스터링 실행", use_container_width = True, type = "primary"):
+if st.button("🗂️ 클러스터링 실행", width = "stretch", type = "primary"):
 
     feature_cols = [c for c in df.select_dtypes(include = [np.number]).columns if c not in EXCLUDE_COLS]
 
